@@ -122,7 +122,15 @@
   }
   body {
     @apply bg-background text-foreground;
+    scroll-behavior: smooth;
   }
+}
+
+.section-label {
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0.26em;
+  color: color-mix(in oklab, var(--color-cyan) 70%, transparent);
 }
 
 /* Technical Grid Background */
