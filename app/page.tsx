@@ -9,6 +9,7 @@ import {
   ChevronRight,
   FileSearch,
   Layers3,
+  Linkedin,
   Menu,
   MessageCircle,
   ShieldCheck,
@@ -18,10 +19,13 @@ import {
 
 const navigation = [
   { label: "O que fazemos", href: "#capacidades" },
+  { label: "Como trabalhamos", href: "#modelo" },
   { label: "Trabalho real", href: "#portfolio" },
   { label: "Em desenvolvimento", href: "#desenvolvimento" },
   { label: "Ecossistema", href: "#ecossistema" },
 ]
+
+const whatsappUrl = "https://wa.me/5519998056642?text=Ol%C3%A1%2C%20Marcos.%20Vim%20pelo%20site%20da%20Proxy%20Labs%20e%20gostaria%20de%20conversar%20sobre%20um%20projeto."
 
 const capabilities = [
   {
@@ -127,7 +131,7 @@ export default function HomePage() {
               </a>
             ))}
           </nav>
-          <a href="#contato" className="hidden border border-white/15 px-4 py-2 text-xs text-white/70 transition hover:border-cyan-300/50 hover:text-white md:inline-flex">
+          <a href={whatsappUrl} target="_blank" rel="noreferrer" className="hidden border border-white/15 px-4 py-2 text-xs text-white/70 transition hover:border-cyan-300/50 hover:text-white md:inline-flex">
             Conversar sobre um projeto
           </a>
           <button className="p-2 text-white/70 md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}>
@@ -139,7 +143,7 @@ export default function HomePage() {
             <motion.nav initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden border-t border-white/[0.07] bg-black md:hidden">
               <div className="flex flex-col gap-5 px-6 py-6">
                 {navigation.map((item) => <a key={item.href} href={item.href} onClick={() => setMenuOpen(false)} className="text-sm text-white/60">{item.label}</a>)}
-                <a href="#contato" onClick={() => setMenuOpen(false)} className="text-sm text-cyan-300">Conversar sobre um projeto →</a>
+                <a href={whatsappUrl} target="_blank" rel="noreferrer" onClick={() => setMenuOpen(false)} className="text-sm text-cyan-300">Conversar sobre um projeto →</a>
               </div>
             </motion.nav>
           )}
@@ -167,7 +171,7 @@ export default function HomePage() {
               <a href="#portfolio" className="inline-flex items-center justify-center gap-2 bg-cyan-300 px-6 py-3.5 text-sm font-semibold text-black transition hover:bg-cyan-200">
                 Conheça nosso trabalho <ArrowRight size={16} />
               </a>
-              <a href="#contato" className="inline-flex items-center justify-center border border-white/15 px-6 py-3.5 text-sm text-white/70 transition hover:border-white/35 hover:text-white">
+              <a href={whatsappUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center border border-white/15 px-6 py-3.5 text-sm text-white/70 transition hover:border-white/35 hover:text-white">
                 Traga um problema real
               </a>
             </div>
@@ -190,6 +194,45 @@ export default function HomePage() {
                 <p className="mt-3 text-sm leading-6 text-white/42">{text}</p>
               </article>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="modelo" className="border-y border-white/[0.07] bg-[#070a0b] py-24 lg:py-32">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-[1.05fr_.95fr] lg:gap-20">
+            <div>
+              <p className="section-label">TECNOLOGIA SEM INTERNALIZAR O RISCO</p>
+              <h2 className="mt-5 text-3xl font-semibold tracking-tight sm:text-5xl">
+                Sua empresa precisa do sistema. Não necessariamente de uma equipe de tecnologia.
+              </h2>
+              <p className="mt-7 max-w-2xl text-base leading-7 text-white/48">
+                Desenvolvemos sistemas sob encomenda para empresas que precisam evoluir sua operação sem contratar desenvolvedores, gerir infraestrutura ou assumir sozinhas o risco técnico do projeto.
+              </p>
+              <p className="mt-5 max-w-2xl text-sm leading-7 text-white/36">
+                É especialmente útil quando a operação já cresceu, as ferramentas genéricas deixaram de acompanhar o negócio e existe um problema caro demais para continuar sendo resolvido manualmente.
+              </p>
+              <a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-9 inline-flex items-center gap-2 border border-cyan-300/30 px-6 py-3.5 text-sm text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-300/[0.04]">
+                Conte o que está travando sua operação <ArrowRight size={16} />
+              </a>
+            </div>
+
+            <div className="border border-white/[0.09] bg-black/35">
+              <div className="border-b border-white/[0.08] px-7 py-5">
+                <p className="text-[10px] uppercase tracking-[.2em] text-white/30">Como construímos</p>
+              </div>
+              {[
+                ["01", "Entendemos o problema", "Mapeamos a operação, as pessoas envolvidas e o custo do processo atual."],
+                ["02", "Definimos o caminho", "Organizamos escopo, prioridades, investimento e uma primeira versão realmente utilizável."],
+                ["03", "Construímos e validamos", "Desenvolvemos em ciclos curtos, testando o sistema com quem vai utilizá-lo."],
+                ["04", "Implantamos e evoluímos", "Acompanhamos a entrada em operação e os próximos avanços do produto."],
+              ].map(([number, title, text]) => (
+                <article key={number} className="grid grid-cols-[44px_1fr] gap-4 border-b border-white/[0.07] p-7 last:border-b-0">
+                  <span className="font-mono text-xs text-cyan-300/55">{number}</span>
+                  <div><h3 className="font-medium text-white/85">{title}</h3><p className="mt-2 text-sm leading-6 text-white/38">{text}</p></div>
+                </article>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -279,7 +322,7 @@ export default function HomePage() {
           <Sparkles className="mx-auto text-cyan-300/60" size={24} strokeWidth={1.5} />
           <h2 className="mt-7 text-4xl font-semibold tracking-tight sm:text-6xl">Qual problema a tecnologia pode resolver na sua operação?</h2>
           <p className="mx-auto mt-6 max-w-xl leading-7 text-white/45">Não é preciso chegar com a solução pronta. Começamos entendendo o problema, o fluxo e a decisão que precisa melhorar.</p>
-          <a href="https://ichthusmkt.com.br/#contato" target="_blank" rel="noreferrer" className="mt-10 inline-flex items-center gap-2 bg-cyan-300 px-7 py-4 text-sm font-semibold text-black transition hover:bg-cyan-200">
+          <a href={whatsappUrl} target="_blank" rel="noreferrer" className="mt-10 inline-flex items-center gap-2 bg-cyan-300 px-7 py-4 text-sm font-semibold text-black transition hover:bg-cyan-200">
             Conversar com a Proxy Labs <ArrowRight size={16} />
           </a>
         </div>
@@ -291,7 +334,8 @@ export default function HomePage() {
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-xs text-white/35">
             <a href="https://ichthusmkt.com.br" target="_blank" rel="noreferrer" className="hover:text-white">Ichthus Marketing</a>
             <a href="https://scribmed.app" target="_blank" rel="noreferrer" className="hover:text-white">ScribMed</a>
-            <a href="#contato" className="hover:text-white">Contato</a>
+            <a href="https://www.linkedin.com/company/proxy-technology" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-white"><Linkedin size={13} /> LinkedIn</a>
+            <a href={whatsappUrl} target="_blank" rel="noreferrer" className="hover:text-white">WhatsApp</a>
           </div>
           <p className="text-xs text-white/20">© 2026 Proxy Labs</p>
         </div>
