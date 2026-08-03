@@ -147,10 +147,10 @@ export default function HomePage() {
       </header>
 
       <section id="inicio" className="relative flex min-h-[92vh] items-center border-b border-white/[0.07] pt-16">
-        <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover opacity-20" aria-hidden="true">
+        <video autoPlay loop muted playsInline className="absolute inset-0 h-full w-full object-cover object-center opacity-45" aria-hidden="true">
           <source src="/proxy.mp4" type="video/mp4" />
         </video>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_45%,rgba(34,211,238,.11),transparent_36%),linear-gradient(90deg,#030506_22%,rgba(3,5,6,.82)_56%,#030506_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_68%_45%,rgba(34,211,238,.08),transparent_38%),linear-gradient(90deg,#030506_4%,rgba(3,5,6,.88)_42%,rgba(3,5,6,.38)_76%,rgba(3,5,6,.62)_100%)]" />
         <div className="tech-grid absolute inset-0 opacity-50" />
         <div className="relative mx-auto w-full max-w-7xl px-6 py-28 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 22 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .7 }} className="max-w-4xl">
@@ -261,7 +261,7 @@ export default function HomePage() {
             {[
               { name: "Ichthus Marketing", tag: "ESTRATÉGIA E AQUISIÇÃO", text: "Posicionamento, conteúdo, campanhas e sistemas de aquisição para fazer negócios crescerem.", href: "https://ichthusmkt.com.br" },
               { name: "Proxy Labs", tag: "TECNOLOGIA E PRODUTOS", text: "Produtos digitais, sistemas sob medida, automações e inteligência artificial aplicada.", href: "#inicio" },
-              { name: "Editora Ichthus", tag: "CONTEÚDO E PUBLICAÇÃO", text: "Livros próprios e uma futura estrutura de curadoria e publicação para especialistas.", href: "https://www.amazon.com.br/s?k=editora+ichthus" },
+              { name: "Editora Ichthus", tag: "CONTEÚDO E PUBLICAÇÃO", text: "Livros próprios e uma futura estrutura de curadoria e publicação para especialistas.", href: "https://www.editoraichthus.com.br/" },
             ].map((company) => (
               <a key={company.name} href={company.href} target={company.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="group bg-[#070a0b] p-7 transition hover:bg-white/[0.025] sm:p-8">
                 <p className="text-[10px] tracking-[.18em] text-white/25">{company.tag}</p>
