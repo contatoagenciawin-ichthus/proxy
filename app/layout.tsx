@@ -14,9 +14,17 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Proxy Technology | Engineering the Proxy Layer for Global Innovation',
-  description: 'Proxy Technology develops cutting-edge AI solutions for Healthcare, Creative Industries, and Conversational Intelligence.',
-  generator: 'v0.app',
+  metadataBase: new URL('https://proxylabsbr.com'),
+  title: 'Proxy Labs | Tecnologia e produtos digitais',
+  description: 'Produtos digitais, sistemas sob medida, automações e inteligência artificial aplicada a operações reais.',
+  openGraph: {
+    title: 'Proxy Labs | Sistemas que apoiam decisões',
+    description: 'Tecnologia e produtos digitais do ecossistema Ichthus.',
+    url: 'https://proxylabsbr.com',
+    siteName: 'Proxy Labs',
+    locale: 'pt_BR',
+    type: 'website',
+  },
   icons: {
     icon: [
       {
@@ -47,7 +55,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt" className="dark">
+    <html lang="pt-BR" className="dark">
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-black text-white`}>
         {children}
         <Analytics />
