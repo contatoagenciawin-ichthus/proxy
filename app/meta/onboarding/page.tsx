@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 
 const appId = "1952034255371331"
 const configId = "1416361170675761"
-const fallbackRedirectUri = "https://proxy.ichthusmkt.com.br/meta/callback"
 
 declare global {
   interface Window {
@@ -62,7 +61,6 @@ export default function MetaOnboardingPage() {
         config_id: configId,
         response_type: "code",
         override_default_response_type: true,
-        fallback_redirect_uri: fallbackRedirectUri,
         extras: {
           setup: {},
           featureType: "whatsapp_business_app_onboarding",
