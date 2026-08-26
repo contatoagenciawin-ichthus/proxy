@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react"
 
-const appId = process.env.NEXT_PUBLIC_META_APP_ID || ""
-const configId = process.env.NEXT_PUBLIC_META_EMBEDDED_SIGNUP_CONFIG_ID || ""
+const appId = "1952034255371331"
+const configId = "1416361170675761"
 
 declare global {
   interface Window {
@@ -20,13 +20,9 @@ declare global {
 
 export default function MetaOnboardingPage() {
   const [sdkReady, setSdkReady] = useState(false)
-  const [status, setStatus] = useState(
-    "Aguardando configuração do aplicativo Meta.",
-  )
+  const [status, setStatus] = useState("Carregando conexão com a Meta...")
 
   useEffect(() => {
-    if (!appId) return
-
     window.fbAsyncInit = () => {
       window.FB?.init({
         appId,
@@ -50,8 +46,8 @@ export default function MetaOnboardingPage() {
   }, [])
 
   function startSignup() {
-    if (!window.FB || !configId) {
-      setStatus("A configuração do Embedded Signup ainda não foi liberada pela Meta.")
+    if (!window.FB) {
+      setStatus("O SDK da Meta ainda não terminou de carregar.")
       return
     }
 
@@ -74,8 +70,6 @@ export default function MetaOnboardingPage() {
     )
   }
 
-  const configured = Boolean(appId && configId)
-
   return (
     <main className="min-h-screen bg-slate-950 px-6 py-16 text-white">
       <div className="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl">
@@ -96,17 +90,11 @@ export default function MetaOnboardingPage() {
         <button
           type="button"
           onClick={startSignup}
-          disabled={!configured || !sdkReady}
+          disabled={!sdkReady}
           className="mt-8 min-h-12 rounded-lg bg-white px-6 font-semibold text-slate-950 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Iniciar conexão com a Meta
         </button>
-
-        {!configured ? (
-          <p className="mt-4 text-sm text-amber-300">
-            O portal técnico está publicado, mas o App ID e o Configuration ID ainda precisam ser liberados/configurados antes do primeiro onboarding real.
-          </p>
-        ) : null}
       </div>
     </main>
   )
