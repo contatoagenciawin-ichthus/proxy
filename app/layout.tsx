@@ -3,20 +3,31 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
-const inter = Inter({ 
-  subsets: ["latin"],
+const inter = Inter({
+  subsets: ['latin'],
   variable: '--font-inter',
 })
 
-const jetbrainsMono = JetBrains_Mono({ 
-  subsets: ["latin"],
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
   variable: '--font-jetbrains-mono',
 })
 
 export const metadata: Metadata = {
-  title: 'Proxy Technology | Engineering the Proxy Layer for Global Innovation',
-  description: 'Proxy Technology develops cutting-edge AI solutions for Healthcare, Creative Industries, and Conversational Intelligence.',
-  generator: 'v0.app',
+  title: 'Proxy Technology | Software, IA, automações e integrações',
+  description:
+    'A Proxy Technology desenvolve produtos digitais, sistemas sob medida, CRM, automações, inteligência artificial e integrações com WhatsApp Business, e-mail, APIs e dados.',
+  generator: 'Proxy Technology',
+  metadataBase: new URL('https://proxy.ichthusmkt.com.br'),
+  openGraph: {
+    title: 'Proxy Technology | Software, IA, automações e integrações',
+    description:
+      'Produtos próprios e sistemas sob medida conectando atendimento, CRM, dados, IA e canais de comunicação.',
+    url: 'https://proxy.ichthusmkt.com.br',
+    siteName: 'Proxy Technology',
+    locale: 'pt_BR',
+    type: 'website',
+  },
   icons: {
     icon: [
       {
@@ -47,7 +58,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="pt" className="dark">
+    <html lang="pt-BR" className="dark">
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-black text-white`}>
         {children}
         <Analytics />
