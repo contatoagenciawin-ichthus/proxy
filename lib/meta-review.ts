@@ -28,6 +28,8 @@ export class MetaReviewError extends Error {
 export function getMetaReviewConfig() {
   const graphVersion = process.env.META_GRAPH_VERSION || DEFAULT_GRAPH_VERSION
   const accessToken = process.env.META_REVIEW_ACCESS_TOKEN || ""
+  const whatsappAccessToken =
+    process.env.META_REVIEW_WHATSAPP_ACCESS_TOKEN || accessToken
   const reviewKey = process.env.META_REVIEW_KEY || ""
   const businessId = process.env.META_REVIEW_BUSINESS_ID || DEFAULT_BUSINESS_ID
   const wabaId = process.env.META_REVIEW_WABA_ID || DEFAULT_WABA_ID
@@ -38,6 +40,7 @@ export function getMetaReviewConfig() {
   return {
     graphVersion,
     accessToken,
+    whatsappAccessToken,
     reviewKey,
     businessId,
     wabaId,
@@ -81,16 +84,18 @@ export function assertMetaReviewReady() {
 export async function metaGraphRequest<T>(
   path: string,
   init: RequestInit = {},
+  tokenOverride?: string,
 ): Promise<T> {
   const config = assertMetaReviewReady()
   const normalizedPath = path.startsWith("/") ? path : `/${path}`
   const url = `https://graph.facebook.com/${config.graphVersion}${normalizedPath}`
+  const token = tokenOverride || config.accessToken
 
   const response = await fetch(url, {
     ...init,
     cache: "no-store",
     headers: {
-      Authorization: `Bearer ${config.accessToken}`,
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
       ...(init.headers || {}),
     },
