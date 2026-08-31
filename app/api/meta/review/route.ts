@@ -101,9 +101,13 @@ export async function GET(request: Request) {
       loadBusinessContext(config.businessId),
       metaGraphRequest<PhoneNumberList>(
         `/${config.wabaId}/phone_numbers?fields=id,display_phone_number,verified_name,quality_rating,platform_type`,
+        {},
+        config.whatsappAccessToken,
       ),
       metaGraphRequest<TemplateList>(
         `/${config.wabaId}/message_templates?fields=id,name,status,category,language&limit=25`,
+        {},
+        config.whatsappAccessToken,
       ),
     ])
 
@@ -152,6 +156,8 @@ export async function POST(request: Request) {
     if (body.action === "create_template") {
       const existing = await metaGraphRequest<TemplateList>(
         `/${config.wabaId}/message_templates?name=${encodeURIComponent(REVIEW_TEMPLATE_NAME)}&fields=id,name,status,category,language`,
+        {},
+        config.whatsappAccessToken,
       )
 
       if (existing.data?.length) {
@@ -179,6 +185,7 @@ export async function POST(request: Request) {
             ],
           }),
         },
+        config.whatsappAccessToken,
       )
 
       return NextResponse.json({
@@ -222,6 +229,7 @@ export async function POST(request: Request) {
             },
           }),
         },
+        config.whatsappAccessToken,
       )
 
       return NextResponse.json({
