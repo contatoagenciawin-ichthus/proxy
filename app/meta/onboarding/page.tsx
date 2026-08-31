@@ -10,7 +10,7 @@ declare global {
     FB?: {
       init: (config: Record<string, unknown>) => void
       login: (
-        callback: (response: unknown) => void,
+        callback: (response: MetaLoginResponse) => void,
         options: Record<string, unknown>,
       ) => void
     }
@@ -18,31 +18,83 @@ declare global {
   }
 }
 
+type MetaLoginResponse = {
+  authResponse?: {
+    code?: string
+  }
+  status?: string
+}
+
+type EmbeddedSignupEvent = {
+  type?: string
+  event?: string
+  data?: Record<string, unknown>
+}
+
 export default function MetaOnboardingPage() {
   const [sdkReady, setSdkReady] = useState(false)
   const [status, setStatus] = useState("Carregando conexão com a Meta...")
 
   useEffect(() => {
+    const handleEmbeddedSignupMessage = (event: MessageEvent) => {
+      if (!event.origin.endsWith("facebook.com")) return
+
+      try {
+        const payload =
+          typeof event.data === "string" ? JSON.parse(event.data) : event.data
+        const data = payload as EmbeddedSignupEvent
+
+        if (data?.type !== "WA_EMBEDDED_SIGNUP") return
+
+        if (data.event === "FINISH" || data.event === "FINISH_ONLY_WABA") {
+          setStatus("Cadastro incorporado concluído pela Meta.")
+          return
+        }
+
+        if (data.event === "CANCEL") {
+          setStatus("Cadastro cancelado antes da conclusão.")
+          return
+        }
+
+        if (data.event === "ERROR") {
+          setStatus("A Meta retornou um erro durante o cadastro incorporado.")
+          return
+        }
+
+        setStatus("Etapa do cadastro incorporado recebida da Meta.")
+      } catch {
+        // O SDK também publica mensagens internas que não pertencem ao
+        // WhatsApp Embedded Signup. Elas podem ser ignoradas com segurança.
+      }
+    }
+
+    window.addEventListener("message", handleEmbeddedSignupMessage)
+
     window.fbAsyncInit = () => {
       window.FB?.init({
         appId,
         cookie: true,
-        xfbml: false,
+        autoLogAppEvents: true,
+        xfbml: true,
         version: "v26.0",
       })
       setSdkReady(true)
       setStatus("Pronto para iniciar o cadastro incorporado.")
     }
 
-    if (document.getElementById("facebook-jssdk")) return
+    if (!document.getElementById("facebook-jssdk")) {
+      const script = document.createElement("script")
+      script.id = "facebook-jssdk"
+      script.async = true
+      script.defer = true
+      script.crossOrigin = "anonymous"
+      script.src = "https://connect.facebook.net/pt_BR/sdk.js"
+      document.body.appendChild(script)
+    }
 
-    const script = document.createElement("script")
-    script.id = "facebook-jssdk"
-    script.async = true
-    script.defer = true
-    script.crossOrigin = "anonymous"
-    script.src = "https://connect.facebook.net/pt_BR/sdk.js"
-    document.body.appendChild(script)
+    return () => {
+      window.removeEventListener("message", handleEmbeddedSignupMessage)
+    }
   }, [])
 
   function startSignup() {
@@ -52,20 +104,30 @@ export default function MetaOnboardingPage() {
     }
 
     setStatus("Abrindo o cadastro da Meta...")
+
     window.FB.login(
       (response) => {
-        console.info("Meta Embedded Signup callback", response)
-        setStatus("Etapa da Meta concluída. A integração será validada no servidor.")
+        if (response.authResponse?.code) {
+          setStatus(
+            "Autorização recebida da Meta. A integração será validada no servidor.",
+          )
+          return
+        }
+
+        setStatus(
+          response.status === "connected"
+            ? "Login concluído; aguardando os dados do cadastro incorporado."
+            : "A autorização da Meta não foi concluída.",
+        )
       },
       {
         config_id: configId,
+        auth_type: "rerequest",
         response_type: "code",
         override_default_response_type: true,
         extras: {
           setup: {},
-          version: "v4",
           featureType: "whatsapp_business_app_onboarding",
-          sessionInfoVersion: "3",
         },
       },
     )
@@ -81,7 +143,8 @@ export default function MetaOnboardingPage() {
           Conectar WhatsApp Business
         </h1>
         <p className="mt-4 leading-7 text-slate-300">
-          Este ambiente é utilizado para autorizar, de forma segura, a conexão de uma conta do WhatsApp Business à infraestrutura da Proxy Technology.
+          Este ambiente é utilizado para autorizar, de forma segura, a conexão de
+          uma conta do WhatsApp Business à infraestrutura da Proxy Technology.
         </p>
 
         <div className="mt-8 rounded-xl border border-white/10 bg-black/20 p-5 text-sm text-slate-300">
