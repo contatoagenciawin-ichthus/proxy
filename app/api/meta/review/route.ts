@@ -11,6 +11,10 @@ import {
 
 type Business = { id: string; name?: string }
 type BusinessList = { data?: Business[] }
+type SystemUser = { id: string; name?: string; role?: string }
+type SystemUserList = { data?: SystemUser[] }
+type SharedWaba = { id: string; name?: string; currency?: string; timezone_id?: string }
+type SharedWabaList = { data?: SharedWaba[] }
 type PhoneNumber = {
   id: string
   display_phone_number?: string
@@ -32,11 +36,16 @@ type MessageResponse = {
   contacts?: Array<{ input?: string; wa_id?: string }>
   messages?: Array<{ id?: string; message_status?: string }>
 }
-
 type CreateTemplateResponse = {
   id?: string
   status?: string
   category?: string
+}
+
+type OptionalResult<T> = {
+  ok: boolean
+  data: T
+  error?: string
 }
 
 const REVIEW_TEMPLATE_NAME = "proxy_app_review_demo"
@@ -67,28 +76,56 @@ function errorResponse(error: unknown) {
   )
 }
 
-async function loadBusinessContext(businessId: string) {
+async function optionalGraphList<T>(path: string): Promise<OptionalResult<T[]>> {
   try {
-    const businesses = await metaGraphRequest<BusinessList>(
+    const result = await metaGraphRequest<{ data?: T[] }>(path)
+    return { ok: true, data: result.data || [] }
+  } catch (error) {
+    return {
+      ok: false,
+      data: [],
+      error: error instanceof Error ? error.message : "Falha na consulta Graph API.",
+    }
+  }
+}
+
+async function loadBusinessContext(businessId: string) {
+  let selected: Business | null = null
+  let businesses: Business[] = []
+  let source = "/me/businesses"
+
+  try {
+    const list = await metaGraphRequest<BusinessList>(
       "/me/businesses?fields=id,name&limit=100",
     )
-    const selected = businesses.data?.find((business) => business.id === businessId)
-
-    return {
-      source: "/me/businesses",
-      selected: selected || null,
-      businesses: businesses.data || [],
-    }
+    businesses = list.data || []
+    selected = businesses.find((business) => business.id === businessId) || null
   } catch {
-    const selected = await metaGraphRequest<Business>(
-      `/${businessId}?fields=id,name`,
-    )
+    const business = await metaGraphRequest<Business>(`/${businessId}?fields=id,name`)
+    selected = business
+    businesses = [business]
+    source = `/${businessId}`
+  }
 
-    return {
-      source: `/${businessId}`,
-      selected,
-      businesses: [selected],
-    }
+  const [systemUsers, sharedWabas] = await Promise.all([
+    optionalGraphList<SystemUser>(
+      `/${businessId}/system_users?fields=id,name,role&limit=100`,
+    ),
+    optionalGraphList<SharedWaba>(
+      `/${businessId}/client_whatsapp_business_accounts?fields=id,name,currency,timezone_id&limit=100`,
+    ),
+  ])
+
+  return {
+    source,
+    selected,
+    businesses,
+    authModel: "server_to_server",
+    tokenType: "system_user_access_token",
+    systemUsersEndpoint: `/${businessId}/system_users`,
+    systemUsers,
+    sharedWabasEndpoint: `/${businessId}/client_whatsapp_business_accounts`,
+    sharedWabas,
   }
 }
 
@@ -125,6 +162,12 @@ export async function GET(request: Request) {
           endpoint: business.source,
           selectedBusiness: business.selected,
           businesses: business.businesses,
+          authModel: business.authModel,
+          tokenType: business.tokenType,
+          systemUsersEndpoint: business.systemUsersEndpoint,
+          systemUsers: business.systemUsers,
+          sharedWabasEndpoint: business.sharedWabasEndpoint,
+          sharedWabas: business.sharedWabas,
         },
         whatsappBusinessManagement: {
           phoneNumbersEndpoint: `/${config.wabaId}/phone_numbers`,
