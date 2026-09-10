@@ -2,6 +2,12 @@
 
 import { useState } from "react"
 
+type OptionalList<T> = {
+  ok: boolean
+  data: T[]
+  error?: string
+}
+
 type ReviewStatus = {
   ok: true
   graphVersion: string
@@ -16,6 +22,17 @@ type ReviewStatus = {
       endpoint: string
       selectedBusiness: { id: string; name?: string } | null
       businesses: Array<{ id: string; name?: string }>
+      authModel: string
+      tokenType: string
+      systemUsersEndpoint: string
+      systemUsers: OptionalList<{ id: string; name?: string; role?: string }>
+      sharedWabasEndpoint: string
+      sharedWabas: OptionalList<{
+        id: string
+        name?: string
+        currency?: string
+        timezone_id?: string
+      }>
     }
     whatsappBusinessManagement: {
       phoneNumbersEndpoint: string
@@ -120,7 +137,6 @@ export default function MetaReviewPage() {
       const failure = payload as ActionResult
       throw new Error(failure.error || `Falha HTTP ${response.status}`)
     }
-
     return payload
   }
 
@@ -128,8 +144,7 @@ export default function MetaReviewPage() {
     setLoading(true)
     setError("")
     try {
-      const payload = (await apiRequest()) as ReviewStatus
-      setStatus(payload)
+      setStatus((await apiRequest()) as ReviewStatus)
     } catch (cause) {
       setStatus(null)
       setError(cause instanceof Error ? cause.message : "Falha ao carregar evidências.")
@@ -159,11 +174,12 @@ export default function MetaReviewPage() {
     setActionLoading("message")
     setError("")
     try {
-      const payload = (await apiRequest({
-        method: "POST",
-        body: JSON.stringify({ action: "send_message", recipient }),
-      })) as ActionResult
-      setMessageResult(payload)
+      setMessageResult(
+        (await apiRequest({
+          method: "POST",
+          body: JSON.stringify({ action: "send_message", recipient }),
+        })) as ActionResult,
+      )
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Falha ao enviar mensagem.")
     } finally {
@@ -175,16 +191,10 @@ export default function MetaReviewPage() {
     <main className="min-h-screen bg-slate-950 px-5 py-10 text-slate-100 md:px-8 md:py-14">
       <div className="mx-auto max-w-6xl">
         <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.07] to-white/[0.03] p-7 shadow-2xl shadow-black/20 md:p-9">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
-            Proxy Technology
-          </p>
-          <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight text-white md:text-5xl">
-            Meta App Review Console
-          </h1>
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">Proxy Technology</p>
+          <h1 className="mt-4 max-w-3xl text-3xl font-semibold tracking-tight text-white md:text-5xl">Meta App Review Console</h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
-            Ambiente controlado para demonstrar, de ponta a ponta, como a Proxy
-            utiliza as permissões solicitadas à Meta para operar a WhatsApp
-            Business Platform.
+            Ambiente controlado para demonstrar, de ponta a ponta, como a Proxy utiliza as permissões solicitadas à Meta para operar a WhatsApp Business Platform.
           </p>
 
           <div className="mt-8 grid gap-4 rounded-2xl border border-white/10 bg-black/20 p-5 md:grid-cols-[1fr_auto] md:items-end">
@@ -207,12 +217,7 @@ export default function MetaReviewPage() {
               {loading ? "Consultando Graph API..." : "Carregar evidências"}
             </button>
           </div>
-
-          {error ? (
-            <div className="mt-5 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
-              {error}
-            </div>
-          ) : null}
+          {error ? <div className="mt-5 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">{error}</div> : null}
         </div>
 
         {status ? (
@@ -231,45 +236,71 @@ export default function MetaReviewPage() {
               ))}
             </div>
 
-            <PermissionCard
-              title="Contexto do portfólio empresarial"
-              permission="business_management"
-            >
-              <p className="text-sm leading-6 text-slate-300">
-                A aplicação consulta o contexto empresarial autorizado e identifica
-                o negócio usado na operação. Endpoint demonstrado:{" "}
-                <code className="text-cyan-200">
-                  {status.evidence.businessManagement.endpoint}
-                </code>
-              </p>
+            <PermissionCard title="Operação empresarial server-to-server" permission="business_management">
+              <div className="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.07] p-4 text-sm leading-6 text-cyan-50">
+                <p className="font-semibold">Modelo de autenticação: Server-to-server</p>
+                <p className="mt-1 text-cyan-100/80">
+                  Esta permissão é usada pelo backend da Proxy com um <strong>System User Access Token</strong>. Por isso não existe uma tela de Meta Login de usuário final para esta chamada.
+                </p>
+              </div>
+
+              <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Business autorizado</p>
+                  <p className="mt-2 text-lg font-semibold text-white">{status.evidence.businessManagement.selectedBusiness?.name || "Proxy Technology"}</p>
+                  <p className="mt-1 text-sm text-slate-400">{status.evidence.businessManagement.selectedBusiness?.id || status.identifiers.businessId}</p>
+                  <p className="mt-4 text-xs text-slate-500">Context endpoint</p>
+                  <code className="mt-1 block break-all text-sm text-cyan-200">{status.evidence.businessManagement.endpoint}</code>
+                </div>
+
+                <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                  <p className="text-xs uppercase tracking-[0.16em] text-slate-500">System Users do Tech Provider</p>
+                  <code className="mt-2 block break-all text-xs text-cyan-200">{status.evidence.businessManagement.systemUsersEndpoint}</code>
+                  {status.evidence.businessManagement.systemUsers.ok ? (
+                    <div className="mt-3 space-y-2">
+                      {status.evidence.businessManagement.systemUsers.data.length ? status.evidence.businessManagement.systemUsers.data.map((user) => (
+                        <div key={user.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                          <p className="font-medium text-white">{user.name || "System User"}</p>
+                          <p className="mt-1 text-xs text-slate-400">ID {user.id}{user.role ? ` · ${user.role}` : ""}</p>
+                        </div>
+                      )) : <p className="mt-3 text-sm text-slate-400">Consulta concluída; nenhum System User retornado.</p>}
+                    </div>
+                  ) : <p className="mt-3 text-sm text-amber-200">{status.evidence.businessManagement.systemUsers.error}</p>}
+                </div>
+              </div>
+
               <div className="mt-4 rounded-xl border border-white/10 bg-black/20 p-4">
-                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Negócio selecionado</p>
-                <p className="mt-2 text-lg font-semibold text-white">
-                  {status.evidence.businessManagement.selectedBusiness?.name || "Proxy Technology"}
-                </p>
-                <p className="mt-1 text-sm text-slate-400">
-                  {status.evidence.businessManagement.selectedBusiness?.id || status.identifiers.businessId}
-                </p>
+                <p className="text-xs uppercase tracking-[0.16em] text-slate-500">WABAs compartilhadas por clientes após Embedded Signup</p>
+                <code className="mt-2 block break-all text-xs text-cyan-200">{status.evidence.businessManagement.sharedWabasEndpoint}</code>
+                {status.evidence.businessManagement.sharedWabas.ok ? (
+                  status.evidence.businessManagement.sharedWabas.data.length ? (
+                    <div className="mt-3 grid gap-2 md:grid-cols-2">
+                      {status.evidence.businessManagement.sharedWabas.data.map((waba) => (
+                        <div key={waba.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                          <p className="font-medium text-white">{waba.name || "Client WABA"}</p>
+                          <p className="mt-1 text-xs text-slate-400">ID {waba.id}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : <p className="mt-3 text-sm text-slate-400">Consulta concluída. Nenhuma WABA de cliente está compartilhada neste ambiente de revisão.</p>
+                ) : <p className="mt-3 text-sm text-amber-200">{status.evidence.businessManagement.sharedWabas.error}</p>}
+              </div>
+
+              <div className="mt-4 rounded-xl border border-emerald-300/20 bg-emerald-300/[0.06] p-4 text-sm leading-6 text-emerald-100">
+                Fluxo de produção: Embedded Signup compartilha a WABA do cliente com a Proxy; o backend consulta os ativos compartilhados e usa o System User para associar e operar a WABA autorizada. Nenhum token é exposto ao navegador.
               </div>
             </PermissionCard>
 
-            <PermissionCard
-              title="Gestão da conta do WhatsApp Business"
-              permission="whatsapp_business_management"
-            >
+            <PermissionCard title="Gestão da conta do WhatsApp Business" permission="whatsapp_business_management">
               <div className="grid gap-4 lg:grid-cols-2">
                 <div className="rounded-xl border border-white/10 bg-black/20 p-4">
                   <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Números associados</p>
                   <div className="mt-3 space-y-3">
                     {status.evidence.whatsappBusinessManagement.phoneNumbers.map((phone) => (
                       <div key={phone.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                        <p className="font-semibold text-white">
-                          {phone.verified_name || "WhatsApp Business"}
-                        </p>
+                        <p className="font-semibold text-white">{phone.verified_name || "WhatsApp Business"}</p>
                         <p className="mt-1 text-sm text-slate-300">{phone.display_phone_number || phone.id}</p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          {phone.platform_type || "Cloud API"} · qualidade {phone.quality_rating || "N/A"}
-                        </p>
+                        <p className="mt-1 text-xs text-slate-500">{phone.platform_type || "Cloud API"} · qualidade {phone.quality_rating || "N/A"}</p>
                       </div>
                     ))}
                   </div>
@@ -279,81 +310,35 @@ export default function MetaReviewPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-xs uppercase tracking-[0.16em] text-slate-500">Templates</p>
-                      <p className="mt-2 text-sm text-slate-300">
-                        {status.evidence.whatsappBusinessManagement.templates.length} template(s) retornado(s)
-                      </p>
+                      <p className="mt-2 text-sm text-slate-300">{status.evidence.whatsappBusinessManagement.templates.length} template(s) retornado(s)</p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={createTemplate}
-                      disabled={actionLoading === "template"}
-                      className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-semibold text-cyan-100 hover:bg-cyan-300/20 disabled:opacity-50"
-                    >
+                    <button type="button" onClick={createTemplate} disabled={actionLoading === "template"} className="rounded-lg border border-cyan-300/30 bg-cyan-300/10 px-4 py-2 text-sm font-semibold text-cyan-100 hover:bg-cyan-300/20 disabled:opacity-50">
                       {actionLoading === "template" ? "Criando..." : "Criar template demo"}
                     </button>
                   </div>
                   <div className="mt-4 max-h-64 space-y-2 overflow-auto pr-1">
                     {status.evidence.whatsappBusinessManagement.templates.map((template) => (
                       <div key={template.id || `${template.name}-${template.language}`} className="rounded-lg border border-white/10 px-3 py-2 text-sm">
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="font-medium text-slate-200">{template.name}</span>
-                          <span className="text-xs text-slate-400">{template.status}</span>
-                        </div>
-                        <p className="mt-1 text-xs text-slate-500">
-                          {template.category} · {template.language}
-                        </p>
+                        <div className="flex items-center justify-between gap-3"><span className="font-medium text-slate-200">{template.name}</span><span className="text-xs text-slate-400">{template.status}</span></div>
+                        <p className="mt-1 text-xs text-slate-500">{template.category} · {template.language}</p>
                       </div>
                     ))}
                   </div>
-                  {templateResult?.template ? (
-                    <div className="mt-4 rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 text-sm text-emerald-100">
-                      Template {templateResult.template.name} {templateResult.reused ? "já existente" : "criado"}. Status: {templateResult.template.status || "PENDING"}.
-                    </div>
-                  ) : null}
+                  {templateResult?.template ? <div className="mt-4 rounded-lg border border-emerald-400/30 bg-emerald-400/10 p-3 text-sm text-emerald-100">Template {templateResult.template.name} {templateResult.reused ? "já existente" : "criado"}. Status: {templateResult.template.status || "PENDING"}.</div> : null}
                 </div>
               </div>
             </PermissionCard>
 
-            <PermissionCard
-              title="Envio real de mensagem de teste"
-              permission="whatsapp_business_messaging"
-            >
-              <p className="text-sm leading-6 text-slate-300">
-                A aplicação envia o template pré-aprovado <code className="text-cyan-200">hello_world</code> pelo endpoint{" "}
-                <code className="text-cyan-200">{status.evidence.whatsappBusinessMessaging.endpoint}</code>.
-                O token permanece exclusivamente no servidor.
-              </p>
+            <PermissionCard title="Envio real de mensagem de teste" permission="whatsapp_business_messaging">
+              <p className="text-sm leading-6 text-slate-300">A aplicação envia o template pré-aprovado <code className="text-cyan-200">hello_world</code> pelo endpoint <code className="text-cyan-200">{status.evidence.whatsappBusinessMessaging.endpoint}</code>. O token permanece exclusivamente no servidor.</p>
               <div className="mt-5 grid gap-3 md:grid-cols-[1fr_auto] md:items-end">
-                <label className="block">
-                  <span className="text-sm font-medium text-slate-300">Destinatário de teste</span>
-                  <input
-                    value={recipient}
-                    onChange={(event) => setRecipient(event.target.value)}
-                    placeholder={`Configurado: ${status.identifiers.recipient}`}
-                    className="mt-2 w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-cyan-400/60"
-                  />
-                </label>
-                <button
-                  type="button"
-                  onClick={sendMessage}
-                  disabled={actionLoading === "message"}
-                  className="min-h-12 rounded-xl bg-cyan-300 px-5 font-semibold text-slate-950 hover:bg-cyan-200 disabled:opacity-50"
-                >
-                  {actionLoading === "message" ? "Enviando..." : "Enviar hello_world"}
-                </button>
+                <label className="block"><span className="text-sm font-medium text-slate-300">Destinatário de teste</span><input value={recipient} onChange={(event) => setRecipient(event.target.value)} placeholder={`Configurado: ${status.identifiers.recipient}`} className="mt-2 w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-cyan-400/60" /></label>
+                <button type="button" onClick={sendMessage} disabled={actionLoading === "message"} className="min-h-12 rounded-xl bg-cyan-300 px-5 font-semibold text-slate-950 hover:bg-cyan-200 disabled:opacity-50">{actionLoading === "message" ? "Enviando..." : "Enviar hello_world"}</button>
               </div>
-              {messageResult?.messageId ? (
-                <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-4 text-sm text-emerald-100">
-                  <p className="font-semibold">Mensagem aceita pela Cloud API.</p>
-                  <p className="mt-2 break-all text-xs text-emerald-200/80">Message ID: {messageResult.messageId}</p>
-                  <p className="mt-1 text-xs text-emerald-200/80">Destinatário: {messageResult.recipient}</p>
-                </div>
-              ) : null}
+              {messageResult?.messageId ? <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-400/10 p-4 text-sm text-emerald-100"><p className="font-semibold">Mensagem aceita pela Cloud API.</p><p className="mt-2 break-all text-xs text-emerald-200/80">Message ID: {messageResult.messageId}</p><p className="mt-1 text-xs text-emerald-200/80">Destinatário: {messageResult.recipient}</p></div> : null}
             </PermissionCard>
 
-            <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.07] p-5 text-sm leading-6 text-amber-100">
-              Esta console usa apenas ativos de teste/configurados para a revisão. Nenhum número de cliente é migrado ou registrado por esta página.
-            </div>
+            <div className="rounded-2xl border border-amber-300/20 bg-amber-300/[0.07] p-5 text-sm leading-6 text-amber-100">Esta console usa apenas ativos de teste/configurados para a revisão. Nenhum número de cliente é migrado ou registrado por esta página.</div>
           </div>
         ) : null}
       </div>
