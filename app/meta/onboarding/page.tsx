@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 const appId = "1952034255371331"
 const configId = "3237839906603757"
 const REVIEW_SESSION_KEY = "proxy_meta_business_management_review"
+const OAUTH_STATE_KEY = "proxy_meta_business_management_oauth_state"
 
 declare global {
   interface Window {
@@ -63,7 +64,7 @@ function isFacebookOrigin(origin: string) {
 
 export default function MetaOnboardingPage() {
   const [sdkReady, setSdkReady] = useState(false)
-  const [status, setStatus] = useState("Loading Meta Embedded Signup...")
+  const [status, setStatus] = useState("Ready to start Meta Embedded Signup.")
   const [reviewSession, setReviewSession] = useState<ReviewSession>({})
 
   function saveReviewSession(patch: Partial<ReviewSession>) {
@@ -72,6 +73,16 @@ export default function MetaOnboardingPage() {
       window.sessionStorage.setItem(REVIEW_SESSION_KEY, JSON.stringify(next))
       return next
     })
+  }
+
+  function beginFreshSession() {
+    const freshSession: ReviewSession = {
+      startedAt: new Date().toISOString(),
+      metaLoginCompleted: false,
+      embeddedSignupCompleted: false,
+    }
+    window.sessionStorage.setItem(REVIEW_SESSION_KEY, JSON.stringify(freshSession))
+    setReviewSession(freshSession)
   }
 
   useEffect(() => {
@@ -84,7 +95,40 @@ export default function MetaOnboardingPage() {
       }
     }
 
-    const handleEmbeddedSignupMessage = (event: MessageEvent) => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin === window.location.origin) {
+        const payload = event.data as {
+          type?: string
+          code?: string
+          state?: string
+          error?: string
+          errorDescription?: string
+        }
+
+        if (payload?.type === "PROXY_META_OAUTH_CALLBACK") {
+          const expectedState = window.sessionStorage.getItem(OAUTH_STATE_KEY)
+          if (!expectedState || payload.state !== expectedState) {
+            setStatus("Meta returned an OAuth response with an invalid state value.")
+            return
+          }
+
+          window.sessionStorage.removeItem(OAUTH_STATE_KEY)
+
+          if (payload.error || !payload.code) {
+            setStatus(
+              payload.errorDescription || payload.error || "Meta authorization did not complete.",
+            )
+            return
+          }
+
+          saveReviewSession({ metaLoginCompleted: true })
+          setStatus(
+            "Meta Login authorization returned successfully. Complete the Embedded Signup flow in the Meta window if it is still open.",
+          )
+          return
+        }
+      }
+
       if (!isFacebookOrigin(event.origin)) return
 
       try {
@@ -139,11 +183,11 @@ export default function MetaOnboardingPage() {
 
         setStatus("Meta Embedded Signup is in progress.")
       } catch {
-        // The Meta SDK also emits internal messages unrelated to Embedded Signup.
+        // Meta also emits internal messages unrelated to Embedded Signup.
       }
     }
 
-    window.addEventListener("message", handleEmbeddedSignupMessage)
+    window.addEventListener("message", handleMessage)
 
     window.fbAsyncInit = () => {
       window.FB?.init({
@@ -154,7 +198,6 @@ export default function MetaOnboardingPage() {
         version: "v26.0",
       })
       setSdkReady(true)
-      setStatus("Ready to start Meta Embedded Signup.")
     }
 
     if (!document.getElementById("facebook-jssdk")) {
@@ -168,24 +211,50 @@ export default function MetaOnboardingPage() {
     }
 
     return () => {
-      window.removeEventListener("message", handleEmbeddedSignupMessage)
+      window.removeEventListener("message", handleMessage)
     }
   }, [])
 
-  function startSignup() {
-    if (!window.FB) {
-      setStatus("The Meta SDK has not finished loading yet.")
+  function startManualSignup() {
+    beginFreshSession()
+
+    const state = crypto.randomUUID()
+    window.sessionStorage.setItem(OAUTH_STATE_KEY, state)
+
+    const redirectUri = `${window.location.origin}/meta/callback`
+    const params = new URLSearchParams({
+      client_id: appId,
+      redirect_uri: redirectUri,
+      config_id: configId,
+      response_type: "code",
+      override_default_response_type: "true",
+      state,
+      display: "popup",
+    })
+
+    const popup = window.open(
+      `https://www.facebook.com/v26.0/dialog/oauth?${params.toString()}`,
+      "proxy-meta-embedded-signup",
+      "width=620,height=780,resizable=yes,scrollbars=yes",
+    )
+
+    if (!popup) {
+      setStatus("The browser blocked the Meta popup. Allow popups for this site and try again.")
       return
     }
 
-    const freshSession: ReviewSession = {
-      startedAt: new Date().toISOString(),
-      metaLoginCompleted: false,
-      embeddedSignupCompleted: false,
+    popup.focus()
+    setStatus("Opening Meta Login and Embedded Signup using the documented manual OAuth flow...")
+  }
+
+  function startSdkSignup() {
+    if (!window.FB) {
+      setStatus("The Meta JavaScript SDK has not finished loading yet.")
+      return
     }
-    window.sessionStorage.setItem(REVIEW_SESSION_KEY, JSON.stringify(freshSession))
-    setReviewSession(freshSession)
-    setStatus("Opening Meta Login and Embedded Signup...")
+
+    beginFreshSession()
+    setStatus("Opening Meta Login and Embedded Signup through the JavaScript SDK...")
 
     window.FB.login(
       (response) => {
@@ -217,6 +286,7 @@ export default function MetaOnboardingPage() {
 
   function restartReview() {
     window.sessionStorage.removeItem(REVIEW_SESSION_KEY)
+    window.sessionStorage.removeItem(OAUTH_STATE_KEY)
     setReviewSession({})
     setStatus("Ready to start Meta Embedded Signup.")
   }
@@ -241,7 +311,7 @@ export default function MetaOnboardingPage() {
           <div className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.07] p-5 text-sm leading-6 text-cyan-50">
             <p className="font-semibold">What the reviewer should observe</p>
             <p className="mt-2 text-cyan-100/85">
-              Meta Login is shown in full. The business administrator selects and explicitly authorizes the Business Portfolio and WhatsApp Business assets in Meta's Embedded Signup. After authorization, Proxy verifies the shared business assets server-to-server using a System User Access Token stored only in the backend.
+              Meta Login is shown in full. The business administrator selects and explicitly authorizes the Business Portfolio and WhatsApp Business assets. After authorization, Proxy verifies the shared assets server-to-server using a System User Access Token stored only in the backend.
             </p>
           </div>
         </header>
@@ -252,17 +322,26 @@ export default function MetaOnboardingPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Step 1</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Customer authorization in Meta</h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-                Start the official Meta flow and complete every screen through the final authorization confirmation. Proxy does not recreate or simulate Meta authorization screens.
+                Start the official Meta flow and complete every screen through the final authorization confirmation. The primary button uses Meta's documented manual Login for Business flow with this Embedded Signup configuration ID.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={startSignup}
-              disabled={!sdkReady}
-              className="min-h-12 shrink-0 rounded-xl bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Start Meta Embedded Signup
-            </button>
+            <div className="flex shrink-0 flex-col gap-2">
+              <button
+                type="button"
+                onClick={startManualSignup}
+                className="min-h-12 rounded-xl bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200"
+              >
+                Start Meta Embedded Signup
+              </button>
+              <button
+                type="button"
+                onClick={startSdkSignup}
+                disabled={!sdkReady}
+                className="min-h-10 rounded-xl border border-white/15 px-4 text-sm font-medium text-slate-300 transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                JavaScript SDK fallback
+              </button>
+            </div>
           </div>
 
           <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
