@@ -9,6 +9,19 @@ type ReviewSession = {
   startedAt?: string
   completedAt?: string
   metaLoginCompleted?: boolean
+  serverExchangeCompleted?: boolean
+  businessManagementGranted?: boolean
+  clientBusinessResolved?: boolean
+  clientBusinessId?: string
+  clientBusinessName?: string
+  clientBusinessEndpoint?: string
+  integrationSystemUserId?: string
+  integrationSystemUserName?: string
+  integrationSystemUserEndpoint?: string
+  grantedScopes?: string[]
+  tokenType?: string
+  tokenValid?: boolean
+  exchangeError?: string
 }
 
 type ReviewPayload = {
@@ -16,10 +29,10 @@ type ReviewPayload = {
   permission: string
   authentication: {
     customerAuthorization: string
-    backendCredential: string
+    providerBackendCredential: string
     tokenVisibleToBrowser: boolean
   }
-  tokenIdentity: {
+  providerTokenIdentity: {
     ok: boolean
     data: { id: string; name?: string } | null
     error?: string
@@ -30,13 +43,6 @@ type ReviewPayload = {
     data: { id: string; name?: string } | null
     error?: string
   }
-  accessibleBusinesses: {
-    endpoint: string
-    ok: boolean
-    data: Array<{ id: string; name?: string }>
-    error?: string
-    configuredBusinessListed: boolean
-  }
   systemUsers: {
     endpoint: string
     ok: boolean
@@ -44,8 +50,8 @@ type ReviewPayload = {
     error?: string
   }
   verification: {
-    configuredBusinessResolved: boolean
-    businessManagementReadCompleted: boolean
+    providerBusinessResolved: boolean
+    providerBusinessManagementReadCompleted: boolean
     systemUserReadCompleted: boolean
     tokenVisibleToBrowser: boolean
   }
@@ -129,11 +135,19 @@ export default function BusinessManagementReviewPage() {
     }
   }
 
-  const authorizationComplete = Boolean(reviewSession?.metaLoginCompleted)
+  const metaAuthorizationReturned = Boolean(reviewSession?.metaLoginCompleted)
+  const clientAuthorizationComplete = Boolean(
+    reviewSession?.metaLoginCompleted &&
+      reviewSession?.serverExchangeCompleted &&
+      reviewSession?.businessManagementGranted &&
+      reviewSession?.clientBusinessResolved &&
+      reviewSession?.tokenValid,
+  )
+
   const endToEndComplete = Boolean(
-    authorizationComplete &&
-      data?.verification.configuredBusinessResolved &&
-      data?.verification.businessManagementReadCompleted &&
+    clientAuthorizationComplete &&
+      data?.verification.providerBusinessResolved &&
+      data?.verification.providerBusinessManagementReadCompleted &&
       data?.verification.systemUserReadCompleted,
   )
 
@@ -148,13 +162,13 @@ export default function BusinessManagementReviewPage() {
             business_management end-to-end review
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
-            This walkthrough demonstrates the rejected permission independently from WhatsApp Embedded Signup: the business administrator explicitly authorizes <code className="text-cyan-200">business_management</code> through Facebook Login for Business, then Proxy demonstrates the corresponding server-to-server Business Manager API operations.
+            This walkthrough links the business administrator's Facebook Login for Business authorization directly to the client Business Portfolio returned by Meta, then shows the Tech Provider's separate server-to-server Business Manager operations.
           </p>
 
           <div className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.07] p-5 text-sm leading-6 text-cyan-50">
             <p className="font-semibold">Review configuration</p>
             <p className="mt-2 text-cyan-100/85">
-              General Facebook Login for Business · System User Access Token · Required asset: Facebook Page · Permission: business_management only. The backend token is stored server-side and is never displayed in the browser.
+              General Facebook Login for Business · Business Integration System User Access Token · Required asset: Facebook Page · Permission: business_management only. Authorization codes are exchanged on the backend, and access tokens are never displayed in the browser.
             </p>
           </div>
 
@@ -175,7 +189,7 @@ export default function BusinessManagementReviewPage() {
               disabled={!reviewKey}
               className="min-h-12 rounded-xl bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {authorizationComplete ? "Run Meta authorization again" : "Start business_management authorization"}
+              {metaAuthorizationReturned ? "Run Meta authorization again" : "Start business_management authorization"}
             </button>
           </div>
 
@@ -184,34 +198,56 @@ export default function BusinessManagementReviewPage() {
           ) : null}
         </header>
 
-        <section className={`rounded-2xl border p-6 ${authorizationComplete ? "border-emerald-300/20 bg-emerald-300/[0.06]" : "border-amber-300/20 bg-amber-300/[0.06]"}`}>
+        <section className={`rounded-2xl border p-6 ${clientAuthorizationComplete ? "border-emerald-300/20 bg-emerald-300/[0.06]" : "border-amber-300/20 bg-amber-300/[0.06]"}`}>
           <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
             <div>
-              <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${authorizationComplete ? "text-emerald-300" : "text-amber-300"}`}>Step 1 · Customer authorization</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Facebook Login for Business</h2>
+              <p className={`text-xs font-semibold uppercase tracking-[0.18em] ${clientAuthorizationComplete ? "text-emerald-300" : "text-amber-300"}`}>Step 1 · Customer authorization and binding</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Facebook Login for Business → authorized client Business</h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
-                The reviewer should continue with the business administrator account, select the Business Portfolio and required Page, and complete the Meta authorization for business_management.
+                The business administrator selects the Business Portfolio and required Page. Proxy then exchanges Meta's authorization code on the server, validates the issued token, confirms the business_management scope, and resolves the returned client_business_id.
               </p>
             </div>
-            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${authorizationComplete ? "bg-emerald-300/15 text-emerald-200" : "bg-amber-300/15 text-amber-200"}`}>
-              {authorizationComplete ? "Completed" : "Required"}
+            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${clientAuthorizationComplete ? "bg-emerald-300/15 text-emerald-200" : "bg-amber-300/15 text-amber-200"}`}>
+              {clientAuthorizationComplete ? "Completed" : "Required"}
             </span>
           </div>
+
+          {clientAuthorizationComplete ? (
+            <div className="mt-5 grid gap-4 lg:grid-cols-2">
+              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Authorized client Business Portfolio</p>
+                <p className="mt-2 text-lg font-semibold text-white">{reviewSession?.clientBusinessName || "Client Business"}</p>
+                <p className="mt-1 text-sm text-slate-400">Business ID: {reviewSession?.clientBusinessId}</p>
+                {reviewSession?.clientBusinessEndpoint ? <code className="mt-3 block break-all text-xs text-cyan-200">{reviewSession.clientBusinessEndpoint}</code> : null}
+              </div>
+              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Business Integration System User</p>
+                <p className="mt-2 text-lg font-semibold text-white">{reviewSession?.integrationSystemUserName || "Integration System User"}</p>
+                <p className="mt-1 text-sm text-slate-400">ID: {reviewSession?.integrationSystemUserId}</p>
+                {reviewSession?.integrationSystemUserEndpoint ? <code className="mt-3 block break-all text-xs text-cyan-200">{reviewSession.integrationSystemUserEndpoint}</code> : null}
+                <p className="mt-3 text-xs text-emerald-200">Granted scope: business_management</p>
+              </div>
+            </div>
+          ) : metaAuthorizationReturned ? (
+            <div className="mt-5 rounded-xl border border-amber-300/20 bg-black/20 p-4 text-sm leading-6 text-amber-100">
+              {reviewSession?.exchangeError || "Meta authorization returned, but the client Business Portfolio has not been resolved server-side. Do not record the final review video in this state."}
+            </div>
+          ) : null}
         </section>
 
         <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Step 2 · Server-side verification</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Demonstrate business_management API usage</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Step 2 · Tech Provider server-side verification</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Demonstrate provider-side business_management usage</h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
-                Proxy's backend uses its System User Access Token to resolve the configured business, enumerate accessible businesses, and read Tech Provider System Users. These operations are performed server-to-server.
+                After the client authorization is linked successfully, Proxy separately verifies its Tech Provider Business and System Users with the provider's backend System User Access Token.
               </p>
             </div>
             <button
               type="button"
               onClick={runServerVerification}
-              disabled={!reviewKey || !authorizationComplete || loading}
+              disabled={!reviewKey || !clientAuthorizationComplete || loading}
               className="min-h-12 shrink-0 rounded-xl bg-cyan-200 px-5 font-semibold text-slate-950 transition hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {loading ? "Running Graph API verification..." : "Run server-side verification"}
@@ -222,12 +258,12 @@ export default function BusinessManagementReviewPage() {
         {data ? (
           <>
             <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Step 3 · Business Manager evidence</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Authorized business context</h2>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Step 3 · Tech Provider evidence</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Proxy Technology server-side business context</h2>
 
               <div className="mt-5 grid gap-4 lg:grid-cols-2">
                 <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Configured Tech Provider Business</p>
+                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Tech Provider Business</p>
                   {data.techProviderBusiness.ok && data.techProviderBusiness.data ? (
                     <>
                       <p className="mt-2 text-lg font-semibold text-white">{data.techProviderBusiness.data.name || "Proxy Technology"}</p>
@@ -235,42 +271,25 @@ export default function BusinessManagementReviewPage() {
                       <code className="mt-3 block break-all text-xs text-cyan-200">{data.techProviderBusiness.endpoint}</code>
                     </>
                   ) : (
-                    <p className="mt-3 text-sm text-amber-200">{data.techProviderBusiness.error || "Business could not be resolved."}</p>
+                    <p className="mt-3 text-sm text-amber-200">{data.techProviderBusiness.error || "Tech Provider business could not be resolved."}</p>
                   )}
                 </div>
 
                 <div className="rounded-xl border border-white/10 bg-black/20 p-4">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Accessible businesses</p>
-                  <code className="mt-2 block break-all text-xs text-cyan-200">{data.accessibleBusinesses.endpoint}</code>
-                  {data.accessibleBusinesses.ok ? (
+                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Tech Provider System Users</p>
+                  <code className="mt-2 block break-all text-xs text-cyan-200">{data.systemUsers.endpoint}</code>
+                  {data.systemUsers.ok ? (
                     <div className="mt-3 space-y-2">
-                      {data.accessibleBusinesses.data.length ? data.accessibleBusinesses.data.map((business) => (
-                        <div key={business.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                          <p className="font-medium text-white">{business.name || "Business"}</p>
-                          <p className="mt-1 text-xs text-slate-400">Business ID: {business.id}</p>
+                      {data.systemUsers.data.length ? data.systemUsers.data.map((user) => (
+                        <div key={user.id} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                          <p className="font-medium text-white">{user.name || "System User"}</p>
+                          <p className="mt-1 text-xs text-slate-400">ID: {user.id}{user.role ? ` · Role: ${user.role}` : ""}</p>
                         </div>
-                      )) : <p className="text-sm text-slate-400">The request completed successfully; no businesses were returned.</p>}
+                      )) : <p className="text-sm text-amber-200">No Tech Provider System Users were returned.</p>}
                     </div>
-                  ) : <p className="mt-3 text-sm text-amber-200">{data.accessibleBusinesses.error}</p>}
+                  ) : <p className="mt-3 text-sm text-amber-200">{data.systemUsers.error}</p>}
                 </div>
               </div>
-            </section>
-
-            <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Step 4 · Server-to-server evidence</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">Tech Provider System Users</h2>
-              <code className="mt-4 block break-all text-sm text-cyan-200">{data.systemUsers.endpoint}</code>
-
-              {data.systemUsers.ok ? (
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
-                  {data.systemUsers.data.length ? data.systemUsers.data.map((user) => (
-                    <div key={user.id} className="rounded-xl border border-white/10 bg-black/20 p-4">
-                      <p className="font-semibold text-white">{user.name || "System User"}</p>
-                      <p className="mt-1 text-sm text-slate-400">ID: {user.id}{user.role ? ` · Role: ${user.role}` : ""}</p>
-                    </div>
-                  )) : <p className="text-sm text-slate-400">The request completed successfully; no System Users were returned.</p>}
-                </div>
-              ) : <p className="mt-4 text-sm text-amber-200">{data.systemUsers.error}</p>}
             </section>
 
             <section className={`rounded-2xl border p-6 ${endToEndComplete ? "border-emerald-300/20 bg-emerald-300/[0.06]" : "border-amber-300/20 bg-amber-300/[0.06]"}`}>
@@ -279,11 +298,13 @@ export default function BusinessManagementReviewPage() {
                 {endToEndComplete ? "Complete business_management use case demonstrated" : "Additional review evidence is still required"}
               </h2>
               <ul className="mt-5 space-y-3 text-sm leading-6">
-                <CheckItem complete={authorizationComplete}>The business administrator completed Facebook Login for Business and granted the business_management review configuration.</CheckItem>
-                <CheckItem complete={data.verification.configuredBusinessResolved}>The configured Business Portfolio was resolved through the Business Manager API.</CheckItem>
-                <CheckItem complete={data.verification.businessManagementReadCompleted}>Server-side business_management reads completed successfully.</CheckItem>
-                <CheckItem complete={data.verification.systemUserReadCompleted}>The Tech Provider's System Users were queried server-to-server.</CheckItem>
-                <CheckItem complete={!data.verification.tokenVisibleToBrowser}>The System User Access Token remained server-side and was not exposed in the browser.</CheckItem>
+                <CheckItem complete={Boolean(reviewSession?.metaLoginCompleted)}>The business administrator completed Facebook Login for Business.</CheckItem>
+                <CheckItem complete={Boolean(reviewSession?.serverExchangeCompleted)}>Meta's authorization code was exchanged server-side for a Business Integration System User token.</CheckItem>
+                <CheckItem complete={Boolean(reviewSession?.businessManagementGranted)}>The issued token was validated with the business_management scope.</CheckItem>
+                <CheckItem complete={Boolean(reviewSession?.clientBusinessResolved)}>The client_business_id was resolved to {reviewSession?.clientBusinessName || "the authorized client Business Portfolio"}.</CheckItem>
+                <CheckItem complete={data.verification.providerBusinessResolved}>Proxy Technology was resolved separately as the Tech Provider Business.</CheckItem>
+                <CheckItem complete={data.verification.providerBusinessManagementReadCompleted && data.verification.systemUserReadCompleted}>Provider-side Business Manager reads completed server-to-server.</CheckItem>
+                <CheckItem complete={!data.verification.tokenVisibleToBrowser}>Neither the client integration token nor the Tech Provider token was exposed in the browser.</CheckItem>
               </ul>
 
               <button

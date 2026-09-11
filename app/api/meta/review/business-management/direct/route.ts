@@ -61,44 +61,34 @@ export async function GET(request: Request) {
     assertReviewAccess(request)
     const config = getMetaReviewConfig()
 
-    const [tokenIdentity, business, businesses, systemUsers] = await Promise.all([
+    const [tokenIdentity, business, systemUsers] = await Promise.all([
       safeGet<{ id: string; name?: string }>("/me?fields=id,name"),
       safeGet<Business>(`/${config.businessId}?fields=id,name`),
-      safeList<Business>("/me/businesses?fields=id,name&limit=100"),
       safeList<SystemUser>(
         `/${config.businessId}/system_users?fields=id,name,role&limit=100`,
       ),
     ])
-
-    const businessListed = businesses.data.some(
-      (item) => item.id === config.businessId,
-    )
 
     return NextResponse.json({
       ok: true,
       permission: "business_management",
       authentication: {
         customerAuthorization: "Facebook Login for Business",
-        backendCredential: "System User Access Token",
+        providerBackendCredential: "Tech Provider System User Access Token",
         tokenVisibleToBrowser: false,
       },
-      tokenIdentity,
+      providerTokenIdentity: tokenIdentity,
       techProviderBusiness: {
         endpoint: `/${config.businessId}?fields=id,name`,
         ...business,
-      },
-      accessibleBusinesses: {
-        endpoint: "/me/businesses?fields=id,name&limit=100",
-        ...businesses,
-        configuredBusinessListed: businessListed,
       },
       systemUsers: {
         endpoint: `/${config.businessId}/system_users?fields=id,name,role&limit=100`,
         ...systemUsers,
       },
       verification: {
-        configuredBusinessResolved: Boolean(business.ok && business.data?.id),
-        businessManagementReadCompleted: Boolean(business.ok && businesses.ok),
+        providerBusinessResolved: Boolean(business.ok && business.data?.id),
+        providerBusinessManagementReadCompleted: Boolean(business.ok && systemUsers.ok),
         systemUserReadCompleted: systemUsers.ok,
         tokenVisibleToBrowser: false,
       },
