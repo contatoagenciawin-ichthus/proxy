@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 
 const appId = "1952034255371331"
-const configId = "1474502514488126"
+const configId = "3237839906603757"
 const REVIEW_SESSION_KEY = "proxy_meta_business_management_review"
 
 declare global {
