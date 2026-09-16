@@ -1,0 +1,353 @@
+"use client"
+
+import { useEffect, useState } from "react"
+
+const appId = "1952034255371331"
+const configId = "3237839906603757"
+const SESSION_KEY = "proxy_meta_whatsapp_coexistence"
+
+declare global {
+  interface Window {
+    FB?: {
+      init: (config: Record<string, unknown>) => void
+      login: (
+        callback: (response: MetaLoginResponse) => void,
+        options: Record<string, unknown>,
+      ) => void
+    }
+    fbAsyncInit?: () => void
+  }
+}
+
+type MetaLoginResponse = {
+  authResponse?: {
+    code?: string
+  }
+  status?: string
+}
+
+type EmbeddedSignupEvent = {
+  type?: string
+  event?: string
+  data?: Record<string, unknown>
+  version?: number | string
+  [key: string]: unknown
+}
+
+type CoexistenceSession = {
+  startedAt?: string
+  completedAt?: string
+  loginCodeReceived?: boolean
+  embeddedSignupCompleted?: boolean
+  embeddedSignupEvent?: string
+  wabaId?: string
+  phoneNumberId?: string
+  businessId?: string
+}
+
+function normalizeMetaId(...values: unknown[]) {
+  for (const value of values) {
+    if (typeof value === "number" && Number.isFinite(value)) return String(value)
+    if (typeof value === "string" && /^\d+$/.test(value)) return value
+  }
+  return ""
+}
+
+function isFacebookOrigin(origin: string) {
+  try {
+    const hostname = new URL(origin).hostname
+    return hostname === "facebook.com" || hostname.endsWith(".facebook.com")
+  } catch {
+    return false
+  }
+}
+
+export default function WhatsAppCoexistenceOnboardingPage() {
+  const [sdkReady, setSdkReady] = useState(false)
+  const [status, setStatus] = useState(
+    "Pronto para iniciar o onboarding de coexistência do WhatsApp Business App.",
+  )
+  const [session, setSession] = useState<CoexistenceSession>({})
+
+  function saveSession(patch: Partial<CoexistenceSession>) {
+    setSession((current) => {
+      const next = { ...current, ...patch }
+      window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+
+  function startFreshSession() {
+    const fresh: CoexistenceSession = {
+      startedAt: new Date().toISOString(),
+      loginCodeReceived: false,
+      embeddedSignupCompleted: false,
+    }
+    window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(fresh))
+    setSession(fresh)
+  }
+
+  useEffect(() => {
+    const stored = window.sessionStorage.getItem(SESSION_KEY)
+    if (stored) {
+      try {
+        setSession(JSON.parse(stored) as CoexistenceSession)
+      } catch {
+        window.sessionStorage.removeItem(SESSION_KEY)
+      }
+    }
+
+    const handleMessage = (event: MessageEvent) => {
+      if (!isFacebookOrigin(event.origin)) return
+
+      try {
+        const payload = typeof event.data === "string" ? JSON.parse(event.data) : event.data
+        const message = payload as EmbeddedSignupEvent
+
+        if (message?.type !== "WA_EMBEDDED_SIGNUP") return
+
+        const eventData = message.data || {}
+        const wabaId = normalizeMetaId(
+          eventData.waba_id,
+          eventData.wabaId,
+          message.waba_id,
+        )
+        const phoneNumberId = normalizeMetaId(
+          eventData.phone_number_id,
+          eventData.phoneNumberId,
+          message.phone_number_id,
+        )
+        const businessId = normalizeMetaId(
+          eventData.business_id,
+          eventData.businessId,
+          message.business_id,
+        )
+
+        if (message.event === "FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING") {
+          saveSession({
+            embeddedSignupCompleted: true,
+            embeddedSignupEvent: message.event,
+            completedAt: new Date().toISOString(),
+            ...(wabaId ? { wabaId } : {}),
+            ...(phoneNumberId ? { phoneNumberId } : {}),
+            ...(businessId ? { businessId } : {}),
+          })
+          setStatus(
+            "Coexistência concluída pela Meta. O WhatsApp Business App foi autorizado para o fluxo de Cloud API.",
+          )
+          return
+        }
+
+        if (message.event === "FINISH" || message.event === "FINISH_ONLY_WABA") {
+          saveSession({
+            embeddedSignupCompleted: true,
+            embeddedSignupEvent: message.event,
+            completedAt: new Date().toISOString(),
+            ...(wabaId ? { wabaId } : {}),
+            ...(phoneNumberId ? { phoneNumberId } : {}),
+            ...(businessId ? { businessId } : {}),
+          })
+          setStatus(
+            `A Meta concluiu o Embedded Signup com o evento ${message.event}. Vamos validar o estado do número antes de considerar a coexistência concluída.`,
+          )
+          return
+        }
+
+        if (message.event === "CANCEL") {
+          setStatus("O onboarding foi cancelado antes da conclusão.")
+          return
+        }
+
+        if (message.event === "ERROR") {
+          setStatus("A Meta informou um erro durante o onboarding de coexistência.")
+          return
+        }
+
+        setStatus("Onboarding de coexistência em andamento na janela da Meta.")
+      } catch {
+        // A Meta emite outras mensagens internas no mesmo canal.
+      }
+    }
+
+    window.addEventListener("message", handleMessage)
+
+    window.fbAsyncInit = () => {
+      window.FB?.init({
+        appId,
+        cookie: true,
+        autoLogAppEvents: true,
+        xfbml: true,
+        version: "v26.0",
+      })
+      setSdkReady(true)
+    }
+
+    if (!document.getElementById("facebook-jssdk")) {
+      const script = document.createElement("script")
+      script.id = "facebook-jssdk"
+      script.async = true
+      script.defer = true
+      script.crossOrigin = "anonymous"
+      script.src = "https://connect.facebook.net/pt_BR/sdk.js"
+      document.body.appendChild(script)
+    }
+
+    return () => {
+      window.removeEventListener("message", handleMessage)
+    }
+  }, [])
+
+  function launchCoexistenceSignup() {
+    if (!window.FB) {
+      setStatus("O SDK da Meta ainda não terminou de carregar. Aguarde alguns segundos e tente novamente.")
+      return
+    }
+
+    startFreshSession()
+    setStatus("Abrindo o fluxo oficial da Meta para conectar o WhatsApp Business App à Cloud API...")
+
+    window.FB.login(
+      (response) => {
+        if (response.authResponse?.code) {
+          saveSession({ loginCodeReceived: true })
+          setStatus(
+            "Autorização recebida. Conclua todas as etapas restantes na janela da Meta, inclusive qualquer confirmação no celular ou QR code que ela apresentar.",
+          )
+          return
+        }
+
+        if (response.status === "connected") {
+          saveSession({ loginCodeReceived: true })
+          setStatus("Login concluído. Aguardando a conclusão do onboarding de coexistência.")
+          return
+        }
+
+        setStatus("A autorização da Meta não foi concluída.")
+      },
+      {
+        config_id: configId,
+        response_type: "code",
+        override_default_response_type: true,
+        extras: {
+          setup: {},
+          featureType: "whatsapp_business_app_onboarding",
+          sessionInfoVersion: "3",
+        },
+      },
+    )
+  }
+
+  function restart() {
+    window.sessionStorage.removeItem(SESSION_KEY)
+    setSession({})
+    setStatus("Pronto para iniciar o onboarding de coexistência do WhatsApp Business App.")
+  }
+
+  const completed = Boolean(session.embeddedSignupCompleted)
+
+  return (
+    <main className="min-h-screen bg-slate-950 px-5 py-10 text-slate-100 md:px-8 md:py-14">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <header className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 md:p-9">
+          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-emerald-300">
+            Proxy Technology · WhatsApp Business Platform
+          </p>
+          <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white md:text-5xl">
+            Conectar WhatsApp Business App em coexistência
+          </h1>
+          <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
+            Este fluxo usa o Embedded Signup oficial da Meta com o seletor específico para
+            WhatsApp Business App. O objetivo é conectar um número já usado no aplicativo à
+            Cloud API sem iniciar o fluxo comum de migração do número.
+          </p>
+        </header>
+
+        <section className="rounded-2xl border border-emerald-300/20 bg-emerald-300/[0.06] p-6 md:p-7">
+          <h2 className="text-xl font-semibold text-white">Antes de começar</h2>
+          <div className="mt-4 space-y-2 text-sm leading-6 text-emerald-50/90">
+            <p>Mantenha o WhatsApp Business App do número aberto e atualizado no celular.</p>
+            <p>Use a conta Meta administradora do portfólio empresarial do cliente.</p>
+            <p>Se a Meta apresentar QR code ou confirmação no celular, conclua essa etapa no aparelho do número.</p>
+            <p>Não escolha opções que peçam para excluir ou migrar o número para fora do WhatsApp Business App.</p>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 md:p-7">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Etapa 1</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Abrir onboarding da Meta</h2>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
+                O botão abaixo chama o Embedded Signup com
+                <code className="mx-1 text-emerald-200">whatsapp_business_app_onboarding</code>
+                para solicitar o caminho de coexistência.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={launchCoexistenceSignup}
+              disabled={!sdkReady}
+              className="min-h-12 shrink-0 rounded-xl bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {sdkReady ? "Conectar WhatsApp Business App" : "Carregando Meta SDK..."}
+            </button>
+          </div>
+
+          <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
+            <strong className="text-white">Status:</strong> {status}
+          </div>
+        </section>
+
+        {completed ? (
+          <section className="rounded-2xl border border-emerald-300/20 bg-emerald-300/[0.06] p-6 md:p-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
+              Retorno da Meta
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-white">Onboarding finalizado</h2>
+            <p className="mt-3 text-sm leading-6 text-emerald-50/90">
+              Não faça nenhuma alteração adicional no número. Os identificadores abaixo serão
+              conferidos na Graph API antes do primeiro teste real.
+            </p>
+
+            <div className="mt-5 grid gap-3 md:grid-cols-3">
+              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Evento</p>
+                <p className="mt-2 break-all text-sm font-medium text-white">
+                  {session.embeddedSignupEvent || "Concluído"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">WABA ID</p>
+                <p className="mt-2 break-all text-sm font-medium text-white">
+                  {session.wabaId || "A confirmar pela Graph API"}
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Phone Number ID</p>
+                <p className="mt-2 break-all text-sm font-medium text-white">
+                  {session.phoneNumberId || "A confirmar pela Graph API"}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={restart}
+              className="mt-6 min-h-11 rounded-xl border border-white/15 px-5 font-semibold text-white transition hover:bg-white/5"
+            >
+              Reiniciar somente esta sessão
+            </button>
+          </section>
+        ) : null}
+
+        <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-6 text-slate-400">
+          <p className="font-semibold text-slate-200">Segurança</p>
+          <p className="mt-2">
+            O código de autorização não é exibido nem salvo nesta página. A sessão guarda apenas
+            identificadores não secretos retornados pelo Embedded Signup para conferência técnica.
+          </p>
+        </section>
+      </div>
+    </main>
+  )
+}
