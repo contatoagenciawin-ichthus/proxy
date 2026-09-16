@@ -308,9 +308,14 @@ export default function WhatsAppCoexistenceOnboardingPage() {
         const code = response.authResponse?.code?.trim() || ""
         if (code) {
           setAuthorizationCode(code)
-          saveSession({ loginCodeReceived: true })
+          saveSession({
+            loginCodeReceived: true,
+            embeddedSignupCompleted: true,
+            embeddedSignupEvent: "AUTHORIZATION_CODE",
+            completedAt: new Date().toISOString(),
+          })
           setStatus(
-            "Autorização recebida com segurança. Conclua as etapas restantes na janela da Meta; o código será trocado somente no backend após a conclusão.",
+            "Autorização concluída pela Meta. Finalizando a credencial operacional no backend da Proxy...",
           )
           return
         }
