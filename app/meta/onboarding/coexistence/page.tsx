@@ -231,7 +231,6 @@ export default function WhatsAppCoexistenceOnboardingPage() {
         extras: {
           setup: {},
           featureType: "whatsapp_business_app_onboarding",
-          sessionInfoVersion: "3",
         },
       },
     )
@@ -278,7 +277,7 @@ export default function WhatsAppCoexistenceOnboardingPage() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Etapa 1</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Abrir onboarding da Meta</h2>
               <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-                O botão abaixo chama o Embedded Signup com
+                O botão abaixo chama o Embedded Signup v4 com
                 <code className="mx-1 text-emerald-200">whatsapp_business_app_onboarding</code>
                 para solicitar o caminho de coexistência.
               </p>
