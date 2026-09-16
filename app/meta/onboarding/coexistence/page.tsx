@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 const appId = "1952034255371331"
 const configId = "3237839906603757"
@@ -34,6 +34,25 @@ type EmbeddedSignupEvent = {
   [key: string]: unknown
 }
 
+type ExchangeResponse = {
+  ok?: boolean
+  error?: string
+  tokenExchangeCompleted?: boolean
+  tokenStored?: boolean
+  tokenVisibleToBrowser?: boolean
+  tokenFingerprint?: string
+  expiresAt?: string | null
+  grantedScopes?: string[]
+  asset?: {
+    wabaId?: string
+    phoneNumberId?: string
+    displayPhoneNumber?: string | null
+    verifiedName?: string | null
+    status?: string | null
+    platformType?: string | null
+  }
+}
+
 type CoexistenceSession = {
   startedAt?: string
   completedAt?: string
@@ -43,6 +62,11 @@ type CoexistenceSession = {
   wabaId?: string
   phoneNumberId?: string
   businessId?: string
+  tokenExchangeCompleted?: boolean
+  tokenStored?: boolean
+  tokenFingerprint?: string
+  tokenExpiresAt?: string | null
+  credentialError?: string
 }
 
 function normalizeMetaId(...values: unknown[]) {
@@ -68,6 +92,8 @@ export default function WhatsAppCoexistenceOnboardingPage() {
     "Pronto para iniciar o onboarding de coexistência do WhatsApp Business App.",
   )
   const [session, setSession] = useState<CoexistenceSession>({})
+  const [authorizationCode, setAuthorizationCode] = useState("")
+  const exchangeInFlight = useRef(false)
 
   function saveSession(patch: Partial<CoexistenceSession>) {
     setSession((current) => {
@@ -82,9 +108,13 @@ export default function WhatsAppCoexistenceOnboardingPage() {
       startedAt: new Date().toISOString(),
       loginCodeReceived: false,
       embeddedSignupCompleted: false,
+      tokenExchangeCompleted: false,
+      tokenStored: false,
     }
     window.sessionStorage.setItem(SESSION_KEY, JSON.stringify(fresh))
     setSession(fresh)
+    setAuthorizationCode("")
+    exchangeInFlight.current = false
   }
 
   useEffect(() => {
@@ -133,7 +163,7 @@ export default function WhatsAppCoexistenceOnboardingPage() {
             ...(businessId ? { businessId } : {}),
           })
           setStatus(
-            "Coexistência concluída pela Meta. O WhatsApp Business App foi autorizado para o fluxo de Cloud API.",
+            "Coexistência concluída pela Meta. Finalizando a credencial operacional no backend da Proxy...",
           )
           return
         }
@@ -148,7 +178,7 @@ export default function WhatsAppCoexistenceOnboardingPage() {
             ...(businessId ? { businessId } : {}),
           })
           setStatus(
-            `A Meta concluiu o Embedded Signup com o evento ${message.event}. Vamos validar o estado do número antes de considerar a coexistência concluída.`,
+            `A Meta concluiu o Embedded Signup com o evento ${message.event}. Finalizando a credencial operacional no backend...`,
           )
           return
         }
@@ -197,6 +227,73 @@ export default function WhatsAppCoexistenceOnboardingPage() {
     }
   }, [])
 
+  useEffect(() => {
+    if (
+      !authorizationCode ||
+      !session.embeddedSignupCompleted ||
+      session.tokenStored ||
+      exchangeInFlight.current
+    ) {
+      return
+    }
+
+    exchangeInFlight.current = true
+    setStatus(
+      "Onboarding concluído. Trocando o código de autorização por uma credencial server-side e armazenando-a de forma cifrada...",
+    )
+
+    void (async () => {
+      try {
+        const response = await fetch("/api/meta/onboarding/exchange", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            code: authorizationCode,
+            wabaId: session.wabaId || undefined,
+            phoneNumberId: session.phoneNumberId || undefined,
+            businessId: session.businessId || undefined,
+          }),
+        })
+        const result = (await response.json()) as ExchangeResponse
+
+        if (!response.ok || result.ok !== true || result.tokenStored !== true) {
+          throw new Error(result.error || "A Meta não concluiu a troca da credencial.")
+        }
+
+        saveSession({
+          tokenExchangeCompleted: true,
+          tokenStored: true,
+          tokenFingerprint: result.tokenFingerprint || undefined,
+          tokenExpiresAt: result.expiresAt || null,
+          credentialError: undefined,
+          ...(result.asset?.wabaId ? { wabaId: result.asset.wabaId } : {}),
+          ...(result.asset?.phoneNumberId
+            ? { phoneNumberId: result.asset.phoneNumberId }
+            : {}),
+        })
+        setAuthorizationCode("")
+        setStatus(
+          "Integração concluída. A credencial operacional foi validada e armazenada de forma cifrada sem ser exposta ao navegador.",
+        )
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Falha ao finalizar a credencial Meta."
+        saveSession({ credentialError: message })
+        setStatus(
+          `A coexistência foi concluída, mas a credencial operacional ainda não foi armazenada: ${message}`,
+        )
+        exchangeInFlight.current = false
+      }
+    })()
+  }, [
+    authorizationCode,
+    session.embeddedSignupCompleted,
+    session.tokenStored,
+    session.wabaId,
+    session.phoneNumberId,
+    session.businessId,
+  ])
+
   function launchCoexistenceSignup() {
     if (!window.FB) {
       setStatus("O SDK da Meta ainda não terminou de carregar. Aguarde alguns segundos e tente novamente.")
@@ -208,10 +305,12 @@ export default function WhatsAppCoexistenceOnboardingPage() {
 
     window.FB.login(
       (response) => {
-        if (response.authResponse?.code) {
+        const code = response.authResponse?.code?.trim() || ""
+        if (code) {
+          setAuthorizationCode(code)
           saveSession({ loginCodeReceived: true })
           setStatus(
-            "Autorização recebida. Conclua todas as etapas restantes na janela da Meta, inclusive qualquer confirmação no celular ou QR code que ela apresentar.",
+            "Autorização recebida com segurança. Conclua as etapas restantes na janela da Meta; o código será trocado somente no backend após a conclusão.",
           )
           return
         }
@@ -239,10 +338,13 @@ export default function WhatsAppCoexistenceOnboardingPage() {
   function restart() {
     window.sessionStorage.removeItem(SESSION_KEY)
     setSession({})
+    setAuthorizationCode("")
+    exchangeInFlight.current = false
     setStatus("Pronto para iniciar o onboarding de coexistência do WhatsApp Business App.")
   }
 
   const completed = Boolean(session.embeddedSignupCompleted)
+  const credentialReady = Boolean(session.tokenStored)
 
   return (
     <main className="min-h-screen bg-slate-950 px-5 py-10 text-slate-100 md:px-8 md:py-14">
@@ -304,8 +406,8 @@ export default function WhatsAppCoexistenceOnboardingPage() {
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-white">Onboarding finalizado</h2>
             <p className="mt-3 text-sm leading-6 text-emerald-50/90">
-              Não faça nenhuma alteração adicional no número. Os identificadores abaixo serão
-              conferidos na Graph API antes do primeiro teste real.
+              O código de autorização é trocado exclusivamente no backend. A credencial emitida
+              pela Meta não é gravada no navegador nem exibida nesta página.
             </p>
 
             <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -318,15 +420,39 @@ export default function WhatsAppCoexistenceOnboardingPage() {
               <div className="rounded-xl border border-white/10 bg-black/20 p-4">
                 <p className="text-xs uppercase tracking-[0.14em] text-slate-500">WABA ID</p>
                 <p className="mt-2 break-all text-sm font-medium text-white">
-                  {session.wabaId || "A confirmar pela Graph API"}
+                  {session.wabaId || "Resolvido no backend"}
                 </p>
               </div>
               <div className="rounded-xl border border-white/10 bg-black/20 p-4">
                 <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Phone Number ID</p>
                 <p className="mt-2 break-all text-sm font-medium text-white">
-                  {session.phoneNumberId || "A confirmar pela Graph API"}
+                  {session.phoneNumberId || "Resolvido no backend"}
                 </p>
               </div>
+            </div>
+
+            <div
+              className={`mt-5 rounded-xl border p-4 text-sm ${
+                credentialReady
+                  ? "border-emerald-300/30 bg-emerald-300/[0.08] text-emerald-50"
+                  : session.credentialError
+                    ? "border-amber-300/30 bg-amber-300/[0.08] text-amber-50"
+                    : "border-white/10 bg-black/20 text-slate-300"
+              }`}
+            >
+              <p className="font-semibold text-white">Credencial operacional</p>
+              <p className="mt-2 leading-6">
+                {credentialReady
+                  ? "Validada pela Meta e armazenada de forma cifrada no backend do cliente."
+                  : session.credentialError
+                    ? "A coexistência está ativa, mas o armazenamento da credencial precisa ser repetido em uma nova sessão de onboarding."
+                    : "Aguardando a troca server-side do código de autorização."}
+              </p>
+              {credentialReady && session.tokenFingerprint ? (
+                <p className="mt-2 text-xs text-emerald-100/70">
+                  Fingerprint técnica: {session.tokenFingerprint}
+                </p>
+              ) : null}
             </div>
 
             <button
@@ -342,8 +468,9 @@ export default function WhatsAppCoexistenceOnboardingPage() {
         <section className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm leading-6 text-slate-400">
           <p className="font-semibold text-slate-200">Segurança</p>
           <p className="mt-2">
-            O código de autorização não é exibido nem salvo nesta página. A sessão guarda apenas
-            identificadores não secretos retornados pelo Embedded Signup para conferência técnica.
+            O código de autorização existe apenas em memória até a troca server-side. O access
+            token não é devolvido ao navegador: a Proxy valida o ativo, assina o handoff e o
+            backend do cliente cifra a credencial antes de persistir.
           </p>
         </section>
       </div>
