@@ -1,6 +1,9 @@
 export const metadata = {
-  title: "Termos de Serviço | Proxy Technology",
+  title: "Termos de Serviço",
   description: "Termos de Serviço da Proxy Technology para integrações e soluções digitais.",
+  alternates: {
+    canonical: "/terms",
+  },
 }
 
 export default function TermsPage() {
