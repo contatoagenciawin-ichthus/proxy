@@ -1,6 +1,9 @@
 export const metadata = {
-  title: "Política de Privacidade | Proxy Technology",
+  title: "Política de Privacidade",
   description: "Política de Privacidade da Proxy Technology para integrações e serviços digitais.",
+  alternates: {
+    canonical: "/privacy",
+  },
 }
 
 export default function PrivacyPage() {
