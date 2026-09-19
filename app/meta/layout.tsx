@@ -1,9 +1,14 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Proxy Technology | Meta App Review",
+  title: "Meta App Review",
   description:
     "Proxy Technology review environment for Meta Login, WhatsApp Embedded Signup, and authorized business asset verification.",
+  robots: {
+    index: false,
+    follow: false,
+    noarchive: true,
+  },
   openGraph: {
     title: "Proxy Technology | Meta App Review",
     description:
