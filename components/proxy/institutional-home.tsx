@@ -49,8 +49,8 @@ const operations = [
     status: "Em produção",
     statusTone: "live",
     description:
-      "Newsletter com estúdio editorial, base própria e infraestrutura de distribuição. A operação evolui para comunicação multicanal por e-mail e WhatsApp.",
-    tags: ["Newsletter", "E-mail", "WhatsApp", "Dashboard"],
+      "Case em produção de uma infraestrutura de audiência própria: conteúdo, newsletter, opt-in, WhatsApp Business e dashboard reunidos em uma operação de distribuição direta.",
+    tags: ["Audiência própria", "E-mail", "WhatsApp", "Dashboard"],
     href: "https://eduardobrasil.fonsecabrasilserrao.com",
     icon: Mail,
   },
@@ -122,12 +122,36 @@ const capabilities = [
   },
 ]
 
+const audiencePillars = [
+  {
+    icon: Network,
+    title: "Base própria",
+    text: "Contatos, segmentação, histórico e fontes de aquisição organizados em uma base que pertence à operação.",
+  },
+  {
+    icon: Mail,
+    title: "Distribuição multicanal",
+    text: "Conteúdo distribuído por e-mail e WhatsApp, com fluxos preparados para diferentes origens e públicos.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Consentimento e governança",
+    text: "Opt-in, opt-out, origem, evidências e regras operacionais incorporados ao fluxo desde a entrada do contato.",
+  },
+  {
+    icon: Workflow,
+    title: "Mensuração e operação",
+    text: "Campanhas, entregas, leituras, cliques, respostas e crescimento da audiência acompanhados em dashboard.",
+  },
+]
+
 const metaInfrastructure = [
-  "Embedded Signup para conexão do WhatsApp Business",
-  "Rotas de callback e validação de integração",
-  "Fluxos de desautorização",
-  "Solicitação e tratamento de exclusão de dados",
-  "Políticas públicas de privacidade e termos de uso",
+  "Onboarding de clientes com Embedded Signup",
+  "Cloud API e conexão de números empresariais",
+  "Templates, campanhas e mensagens transacionais",
+  "Webhooks de entrega, leitura, respostas e eventos",
+  "Fluxos de consentimento, desautorização e exclusão de dados",
+  "Arquitetura preparada para coexistência quando aplicável",
 ]
 
 const groups = [
@@ -175,8 +199,9 @@ export function InstitutionalHome() {
 
           <nav className="hidden items-center gap-7 md:flex">
             <a href="#operacoes" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Operações</a>
+            <a href="#audiencia" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Audiência</a>
             <a href="#infraestrutura" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Infraestrutura</a>
-            <a href="#meta" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Integrações</a>
+            <a href="#meta" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Meta</a>
             <a href="#contato" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Contato</a>
           </nav>
 
@@ -191,10 +216,10 @@ export function InstitutionalHome() {
 
       <section className="relative min-h-[92vh] overflow-hidden px-6 pb-24 pt-36 lg:px-8 lg:pt-44">
         <div className="absolute inset-0">
-          <video autoPlay loop muted playsInline preload="metadata" className="h-full w-full object-cover opacity-25">
+          <video autoPlay loop muted playsInline preload="metadata" className="h-full w-full object-cover opacity-40">
             <source src="/proxy.mp4" type="video/mp4" />
           </video>
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_35%,rgba(34,211,238,0.13),transparent_34%),linear-gradient(to_bottom,rgba(0,0,0,0.45),#000_82%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_35%,rgba(34,211,238,0.10),transparent_38%),linear-gradient(to_bottom,rgba(0,0,0,0.28),#000_88%)]" />
         </div>
 
         <div className="relative mx-auto grid max-w-7xl gap-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-end">
@@ -206,8 +231,14 @@ export function InstitutionalHome() {
               Tecnologia construída para entrar na operação.
             </h1>
             <p className="mt-8 max-w-2xl text-lg leading-relaxed text-white/55 lg:text-xl">
-              Desenvolvemos produtos próprios e sistemas sob medida que conectam atendimento, dados, CRM, inteligência artificial e canais de comunicação em fluxos reais de negócio.
+              Desenvolvemos produtos próprios e sistemas sob medida que conectam atendimento, audiência, dados, CRM, inteligência artificial e canais de comunicação em fluxos reais de negócio.
             </p>
+            <div className="mt-6 max-w-2xl border-l border-cyan-300/45 pl-5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-300/65">Human-Centered AI</p>
+              <p className="mt-2 text-sm leading-relaxed text-white/45">
+                Tecnologia para ampliar a capacidade humana, reduzir atrito operacional e devolver tempo às pessoas para decisões, relações e trabalho de maior valor.
+              </p>
+            </div>
             <div className="mt-10 flex flex-wrap gap-3">
               <a href="#operacoes" className="bg-cyan-400 px-6 py-3 text-sm font-semibold text-black transition hover:bg-cyan-300">
                 Ver operações atuais
@@ -218,7 +249,7 @@ export function InstitutionalHome() {
             </div>
           </div>
 
-          <aside className="border border-white/10 bg-black/55 p-7 backdrop-blur-md lg:p-9">
+          <aside className="border border-white/10 bg-black/45 p-7 backdrop-blur-md lg:p-9">
             <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-white/35">Atuação</p>
             <div className="mt-7 space-y-6">
               {[
@@ -319,6 +350,62 @@ export function InstitutionalHome() {
         </div>
       </section>
 
+
+      <section id="audiencia" className="relative overflow-hidden border-y border-white/10 bg-[#071012] px-6 py-24 lg:px-8 lg:py-32">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.10),transparent_30%),radial-gradient(circle_at_85%_80%,rgba(34,211,238,0.06),transparent_28%)]" />
+        <div className="relative mx-auto max-w-7xl">
+          <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-cyan-300/75">Audiência própria</p>
+              <h2 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">Conteúdo que vira relacionamento direto.</h2>
+              <p className="mt-7 max-w-2xl text-base leading-relaxed text-white/50 lg:text-lg">
+                Empresas produzem artigos, vídeos, notícias, lançamentos e conhecimento todos os dias. A Proxy transforma esse conteúdo em uma infraestrutura própria de distribuição, captação e relacionamento, sem depender apenas do alcance das redes sociais.
+              </p>
+            </div>
+            <div className="border border-cyan-300/20 bg-black/35 p-6 lg:p-7">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-300/65">Fluxo</p>
+              <div className="mt-5 grid gap-px bg-white/10 sm:grid-cols-5">
+                {["Conteúdo", "Opt-in", "E-mail + WhatsApp", "Base própria", "Dashboard"].map((item, index) => (
+                  <div key={item} className="relative bg-[#081012] px-4 py-5 text-center">
+                    <span className="font-mono text-[9px] text-white/20">0{index + 1}</span>
+                    <p className="mt-2 text-xs font-semibold text-white/75">{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-12 grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
+            {audiencePillars.map(({ icon: Icon, title, text }) => (
+              <article key={title} className="bg-[#071012] p-7">
+                <Icon className="h-6 w-6 text-cyan-300/70" strokeWidth={1.6} />
+                <h3 className="mt-8 text-lg font-semibold">{title}</h3>
+                <p className="mt-3 text-sm leading-relaxed text-white/45">{text}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="mt-10 flex flex-col gap-6 border-t border-white/10 pt-8 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/30">
+                Aplicações
+              </p>
+              <p className="mt-3 max-w-4xl text-sm leading-relaxed text-white/50">
+                Veículos de mídia, e-commerce, educação, saúde, serviços profissionais, associações, empresas B2B e negócios que precisam manter relacionamento recorrente com uma base própria.
+              </p>
+            </div>
+            <a
+              href="https://eduardobrasil.fonsecabrasilserrao.com"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex shrink-0 items-center gap-2 border border-cyan-300/25 px-5 py-3 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300/60"
+            >
+              Ver case em produção <ArrowUpRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      </section>
+
       <section id="infraestrutura" className="bg-white px-6 py-24 text-black lg:px-8 lg:py-32">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
@@ -343,36 +430,42 @@ export function InstitutionalHome() {
         </div>
       </section>
 
-      <section id="meta" className="bg-cyan-400 px-6 py-24 text-black lg:px-8 lg:py-28">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1fr_0.9fr] lg:items-start">
+      <section id="meta" className="relative overflow-hidden border-y border-white/10 bg-black px-6 py-24 text-white lg:px-8 lg:py-32">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_30%,rgba(34,211,238,0.12),transparent_30%)]" />
+        <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1fr_0.9fr] lg:items-start">
           <div>
-            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-black/50">Integrações de comunicação</p>
-            <h2 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">WhatsApp não é só um botão no site.</h2>
-            <p className="mt-7 max-w-2xl text-lg leading-relaxed text-black/65">
-              Para operações que dependem de mensageria, construímos a camada de conexão entre conta empresarial, aplicação, CRM, regras de atendimento e dados. A Proxy mantém infraestrutura própria para o fluxo técnico de integração com a Meta.
+            <div className="inline-flex border border-cyan-300/25 bg-cyan-300/[0.06] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-200">
+              Meta Tech Provider · WhatsApp Business Platform
+            </div>
+            <h2 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">WhatsApp empresarial exige infraestrutura.</h2>
+            <p className="mt-7 max-w-2xl text-lg leading-relaxed text-white/55">
+              A Proxy Technology atua como Tech Provider para a WhatsApp Business Platform. Conectamos contas empresariais, aplicações, CRMs, automações, inteligência artificial e dados em fluxos preparados para operação real.
+            </p>
+            <p className="mt-5 max-w-2xl text-sm leading-relaxed text-white/40">
+              Não tratamos o WhatsApp como um botão isolado. A integração nasce junto com consentimento, regras de atendimento, eventos, histórico e governança.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <Link href="/meta/onboarding" className="inline-flex items-center gap-2 bg-black px-5 py-3 text-sm font-semibold text-white">
+              <Link href="/meta/onboarding" className="inline-flex items-center gap-2 bg-cyan-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-cyan-300">
                 Ambiente WhatsApp Business <ArrowUpRight className="h-4 w-4" />
               </Link>
-              <Link href="/privacy" className="border border-black/25 px-5 py-3 text-sm font-semibold text-black/70 transition hover:border-black/50">
+              <Link href="/privacy" className="border border-white/15 px-5 py-3 text-sm font-semibold text-white/60 transition hover:border-white/35 hover:text-white">
                 Política de privacidade
               </Link>
             </div>
           </div>
 
-          <div className="border border-black/20 bg-black/5 p-7 lg:p-9">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-black/45">Infraestrutura existente</p>
+          <div className="border border-white/10 bg-white/[0.035] p-7 lg:p-9">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-300/60">Capacidades na plataforma</p>
             <div className="mt-7 space-y-4">
               {metaInfrastructure.map((item) => (
-                <div key={item} className="flex items-start gap-3 border-t border-black/15 pt-4 first:border-0 first:pt-0">
-                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" strokeWidth={1.8} />
-                  <p className="text-sm font-medium leading-relaxed text-black/70">{item}</p>
+                <div key={item} className="flex items-start gap-3 border-t border-white/10 pt-4 first:border-0 first:pt-0">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-cyan-300/75" strokeWidth={1.8} />
+                  <p className="text-sm font-medium leading-relaxed text-white/60">{item}</p>
                 </div>
               ))}
             </div>
-            <p className="mt-7 text-xs leading-relaxed text-black/50">
-              A existência dessa infraestrutura não representa, por si só, selo, certificação ou endosso da Meta. As integrações seguem os processos e permissões aplicáveis a cada operação.
+            <p className="mt-7 border-t border-white/10 pt-5 text-xs leading-relaxed text-white/35">
+              Cada implantação segue as permissões, políticas e processos aplicáveis à conta empresarial do cliente e à WhatsApp Business Platform.
             </p>
           </div>
         </div>
