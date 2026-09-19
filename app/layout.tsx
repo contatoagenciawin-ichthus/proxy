@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { siteDescription, siteName, siteUrl } from '@/lib/site'
 import './globals.css'
 
 const inter = Inter({
@@ -14,19 +15,35 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Proxy Technology | Software, IA, audiência e integrações',
-  description:
-    'A Proxy Technology desenvolve produtos digitais, sistemas sob medida, IA, CRM e infraestrutura de audiência própria com e-mail, WhatsApp Business, APIs e dados.',
-  generator: 'Proxy Technology',
-  metadataBase: new URL('https://proxy.ichthusmkt.com.br'),
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: 'Proxy Technology | Software, IA, audiência e integrações',
+    template: '%s | Proxy Technology',
+  },
+  description: siteDescription,
+  applicationName: siteName,
+  generator: siteName,
+  creator: siteName,
+  publisher: siteName,
+  category: 'technology',
   openGraph: {
     title: 'Proxy Technology | Software, IA, audiência e integrações',
     description:
       'Produtos próprios e sistemas sob medida conectando atendimento, audiência, CRM, dados, IA, e-mail e WhatsApp Business.',
-    url: 'https://proxy.ichthusmkt.com.br',
-    siteName: 'Proxy Technology',
+    url: siteUrl,
+    siteName,
     locale: 'pt_BR',
     type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Proxy Technology | Software, IA, audiência e integrações',
+    description:
+      'Produtos próprios e sistemas sob medida conectando atendimento, audiência, CRM, dados, IA, e-mail e WhatsApp Business.',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
   icons: {
     icon: [
