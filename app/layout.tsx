@@ -14,15 +14,15 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Proxy Technology | Software, IA, automações e integrações',
+  title: 'Proxy Technology | Software, IA, audiência e integrações',
   description:
-    'A Proxy Technology desenvolve produtos digitais, sistemas sob medida, CRM, automações, inteligência artificial e integrações com WhatsApp Business, e-mail, APIs e dados.',
+    'A Proxy Technology desenvolve produtos digitais, sistemas sob medida, IA, CRM e infraestrutura de audiência própria com e-mail, WhatsApp Business, APIs e dados.',
   generator: 'Proxy Technology',
   metadataBase: new URL('https://proxy.ichthusmkt.com.br'),
   openGraph: {
-    title: 'Proxy Technology | Software, IA, automações e integrações',
+    title: 'Proxy Technology | Software, IA, audiência e integrações',
     description:
-      'Produtos próprios e sistemas sob medida conectando atendimento, CRM, dados, IA e canais de comunicação.',
+      'Produtos próprios e sistemas sob medida conectando atendimento, audiência, CRM, dados, IA, e-mail e WhatsApp Business.',
     url: 'https://proxy.ichthusmkt.com.br',
     siteName: 'Proxy Technology',
     locale: 'pt_BR',
