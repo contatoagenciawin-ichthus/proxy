@@ -17,6 +17,8 @@ import {
   Workflow,
 } from "lucide-react"
 
+const relationshipDemoUrl = process.env.NEXT_PUBLIC_RELATIONSHIP_DEMO_URL?.trim()
+
 const operations = [
   {
     name: "ScribMed",
@@ -246,6 +248,16 @@ export function InstitutionalHome() {
               <a href="#infraestrutura" className="border border-white/20 px-6 py-3 text-sm font-semibold text-white/70 transition hover:border-white/40 hover:text-white">
                 Ver capacidade técnica
               </a>
+              {relationshipDemoUrl && (
+                <a
+                  href={relationshipDemoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="border border-cyan-300/35 px-6 py-3 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300/70 hover:bg-cyan-300/[0.05]"
+                >
+                  Explorar demonstração <ArrowUpRight className="ml-2 inline h-4 w-4" />
+                </a>
+              )}
             </div>
           </div>
 
