@@ -54,6 +54,26 @@ type ReviewSession = {
     cost_per_action_type?: Array<{ action_type?: string; value?: string }>
   }>
   campaignInsightsError?: string | null
+  campaignInsightsByAccount?: Record<
+    string,
+    {
+      data: Array<{
+        campaign_id?: string
+        campaign_name?: string
+        spend?: string
+        impressions?: string
+        reach?: string
+        clicks?: string
+        ctr?: string
+        cpc?: string
+        cpm?: string
+        frequency?: string
+        actions?: Array<{ action_type?: string; value?: string }>
+        cost_per_action_type?: Array<{ action_type?: string; value?: string }>
+      }>
+      error: string | null
+    }
+  >
   exchangeError?: string
 }
 
@@ -65,6 +85,7 @@ type ExchangePayload = {
   adAccounts?: ReviewSession["adAccounts"]
   campaignInsights?: ReviewSession["campaignInsights"]
   campaignInsightsError?: string | null
+  campaignInsightsByAccount?: ReviewSession["campaignInsightsByAccount"]
   verification?: {
     adsReadGranted: boolean
     tokenValid: boolean
@@ -174,6 +195,7 @@ export default function AdsReadLoginReviewPage() {
           adAccounts: exchange.adAccounts || [],
           campaignInsights: exchange.campaignInsights || [],
           campaignInsightsError: exchange.campaignInsightsError || null,
+          campaignInsightsByAccount: exchange.campaignInsightsByAccount || {},
           completedAt: new Date().toISOString(),
         }
 
