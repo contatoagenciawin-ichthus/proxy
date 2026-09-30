@@ -44,6 +44,7 @@ type ReviewSession = {
   }>
   campaignInsights?: CampaignInsights[]
   campaignInsightsError?: string | null
+  campaignInsightsByAccount?: Record<string, { data: CampaignInsights[]; error: string | null }>
   exchangeError?: string
 }
 
@@ -180,6 +181,16 @@ export default function AdsReadReviewPage() {
     ) ||
     session?.adAccounts?.[0] ||
     null
+
+  const selectedCampaignInsights = selectedAccount
+    ? session?.campaignInsightsByAccount?.[selectedAccount.id]?.data ||
+      (selectedAccount.id === session?.primaryAccountId ? session?.campaignInsights || [] : [])
+    : []
+
+  const selectedCampaignInsightsError = selectedAccount
+    ? session?.campaignInsightsByAccount?.[selectedAccount.id]?.error ||
+      (selectedAccount.id === session?.primaryAccountId ? session?.campaignInsightsError || null : null)
+    : null
 
   const report = useMemo(() => {
     if (!selectedAccount?.insights) return null
@@ -461,10 +472,10 @@ export default function AdsReadReviewPage() {
                 Step 4 · Campaign detail
               </p>
               <h2 className="mt-2 text-xl font-semibold text-white">
-                Campaign-level Insights for the primary account
+                Campaign-level Insights for the selected account
               </h2>
 
-              {session.campaignInsights?.length ? (
+              {selectedCampaignInsights.length ? (
                 <div className="mt-5 overflow-x-auto">
                   <table className="w-full min-w-[840px] text-left text-sm">
                     <thead className="text-xs uppercase tracking-[0.12em] text-slate-500">
@@ -480,7 +491,7 @@ export default function AdsReadReviewPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {session.campaignInsights.map((campaign, index) => (
+                      {selectedCampaignInsights.map((campaign, index) => (
                         <tr
                           key={campaign.campaign_id || `campaign-${index}`}
                           className="border-b border-white/5 text-slate-300"
@@ -524,8 +535,8 @@ export default function AdsReadReviewPage() {
                 </div>
               ) : (
                 <p className="mt-5 rounded-xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm text-amber-100">
-                  {session.campaignInsightsError ||
-                    "No campaign-level rows were returned. Account-level reporting above still demonstrates ads_read successfully."}
+                  {selectedCampaignInsightsError ||
+                    "No campaign-level rows were returned for the selected account. Account-level reporting above still demonstrates ads_read successfully."}
                 </p>
               )}
             </section>
