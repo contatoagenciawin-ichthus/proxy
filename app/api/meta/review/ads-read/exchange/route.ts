@@ -318,21 +318,43 @@ export async function POST(request: Request) {
       accountsWithInsights[0] ||
       null
 
-    let campaignInsights: InsightsRow[] = []
-    let campaignInsightsError: string | null = null
+    const campaignInsightsByAccountEntries = await Promise.all(
+      accountsWithInsights.map(async (account) => {
+        try {
+          const rows = await fetchCampaignInsights(
+            config.graphVersion,
+            account.id,
+            accessToken,
+          )
+          return [
+            account.id,
+            { data: rows, error: null as string | null },
+          ] as const
+        } catch (error) {
+          return [
+            account.id,
+            {
+              data: [] as InsightsRow[],
+              error:
+                error instanceof Error
+                  ? error.message
+                  : "Campaign insights request failed.",
+            },
+          ] as const
+        }
+      }),
+    )
 
-    if (primaryAccount) {
-      try {
-        campaignInsights = await fetchCampaignInsights(
-          config.graphVersion,
-          primaryAccount.id,
-          accessToken,
-        )
-      } catch (error) {
-        campaignInsightsError =
-          error instanceof Error ? error.message : "Campaign insights request failed."
-      }
-    }
+    const campaignInsightsByAccount = Object.fromEntries(
+      campaignInsightsByAccountEntries,
+    ) as Record<
+      string,
+      { data: InsightsRow[]; error: string | null }
+    >
+
+    const primaryCampaignInsights = primaryAccount
+      ? campaignInsightsByAccount[primaryAccount.id]?.data || []
+      : []
 
     return NextResponse.json({
       ok: true,
@@ -351,15 +373,20 @@ export async function POST(request: Request) {
       },
       adAccounts: accountsWithInsights,
       primaryAccountId: primaryAccount?.id || null,
-      campaignInsights,
-      campaignInsightsError,
+      campaignInsights: primaryCampaignInsights,
+      campaignInsightsError: primaryAccount
+        ? campaignInsightsByAccount[primaryAccount.id]?.error || null
+        : null,
+      campaignInsightsByAccount,
       period: "last_30d",
       verification: {
         adsReadGranted,
         tokenValid: debugPayload.data?.is_valid === true,
         adAccountsRetrieved: accountsWithInsights.length > 0,
         accountInsightsRetrieved: accountsWithInsights.some((account) => Boolean(account.insights)),
-        campaignInsightsRetrieved: campaignInsights.length > 0,
+        campaignInsightsRetrieved: Object.values(
+          campaignInsightsByAccount,
+        ).some((entry) => entry.data.length > 0),
         tokenVisibleToBrowser: false,
         tokenPersistedByReviewFlow: false,
       },
