@@ -102,6 +102,8 @@ export default function AdsReadReviewPage() {
   const [reviewKey, setReviewKey] = useState("")
   const [session, setSession] = useState<ReviewSession | null>(null)
   const [selectedAccountId, setSelectedAccountId] = useState("")
+  const [keyStatus, setKeyStatus] = useState("")
+  const [checkingKey, setCheckingKey] = useState(false)
 
   useEffect(() => {
     const storedKey = window.sessionStorage.getItem(REVIEW_ACCESS_KEY)
@@ -127,11 +129,41 @@ export default function AdsReadReviewPage() {
     else window.sessionStorage.removeItem(REVIEW_ACCESS_KEY)
   }
 
-  function startAuthorization() {
-    if (reviewKey) {
+  async function startAuthorization() {
+    if (!reviewKey) return
+
+    setCheckingKey(true)
+    setKeyStatus("Validating review access key against this deployment...")
+
+    try {
+      const response = await fetch("/api/meta/review/key-check", {
+        method: "POST",
+        cache: "no-store",
+        headers: { "x-review-key": reviewKey },
+      })
+      const payload = await response.json()
+
+      if (!response.ok || !payload.ok) {
+        setKeyStatus(
+          `Review key rejected by ${payload.environment || "current"} deployment. Configured fingerprint: ${payload.configuredFingerprint || "unknown"} · provided fingerprint: ${payload.providedFingerprint || "unknown"}.`,
+        )
+        return
+      }
+
       window.sessionStorage.setItem(REVIEW_ACCESS_KEY, reviewKey)
+      setKeyStatus(
+        `Review key validated in ${payload.environment || "current"} deployment. Opening Meta authorization...`,
+      )
+      window.location.assign("/meta/review/ads-read/login")
+    } catch (cause) {
+      setKeyStatus(
+        cause instanceof Error
+          ? cause.message
+          : "Review key validation failed before Meta authorization.",
+      )
+    } finally {
+      setCheckingKey(false)
     }
-    window.location.assign("/meta/review/ads-read/login")
   }
 
   function restartReview() {
@@ -248,14 +280,22 @@ export default function AdsReadReviewPage() {
             <button
               type="button"
               onClick={startAuthorization}
-              disabled={!reviewKey}
+              disabled={!reviewKey || checkingKey}
               className="min-h-12 rounded-xl bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {session?.metaLoginCompleted
-                ? "Run Meta authorization again"
-                : "Start ads_read authorization"}
+              {checkingKey
+                ? "Validating review key..."
+                : session?.metaLoginCompleted
+                  ? "Run Meta authorization again"
+                  : "Start ads_read authorization"}
             </button>
           </div>
+
+          {keyStatus ? (
+            <div className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300">
+              <strong className="text-white">Preflight:</strong> {keyStatus}
+            </div>
+          ) : null}
         </header>
 
         <section
