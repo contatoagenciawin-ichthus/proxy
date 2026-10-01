@@ -18,6 +18,8 @@ type Insights = {
   cpc?: string
   cpm?: string
   frequency?: string
+  date_start?: string
+  date_stop?: string
 }
 
 type CampaignInsights = Insights & {
@@ -128,12 +130,14 @@ export default function PetEndoscopiaMetaReportPage() {
   const report = useMemo(() => {
     if (!session?.adAccounts?.length) return null
 
+    const petAccount = session.adAccounts.find((item) =>
+      item.name?.toLowerCase().includes("pet endoscopia"),
+    )
+
     const account =
-      session.adAccounts.find(
-        (item) =>
-          item.name?.toLowerCase().includes("pet endoscopia") ||
-          item.id === session.primaryAccountId,
-      ) || session.adAccounts[0]
+      petAccount ||
+      session.adAccounts.find((item) => item.id === session.primaryAccountId) ||
+      session.adAccounts[0]
 
     const campaigns =
       session.campaignInsightsByAccount?.[account.id]?.data || []
@@ -233,6 +237,16 @@ export default function PetEndoscopiaMetaReportPage() {
             Dados obtidos diretamente da Meta Marketing API, em modo somente
             leitura, a partir da conta de anúncios autorizada.
           </p>
+          <div className="mt-5 grid gap-2 text-sm text-[#5f7075] md:grid-cols-3">
+            <p><strong>Conta:</strong> {account.name || "Sem nome"}</p>
+            <p><strong>ID:</strong> {account.id}</p>
+            <p>
+              <strong>Período:</strong>{" "}
+              {insights.date_start && insights.date_stop
+                ? insights.date_start + " a " + insights.date_stop
+                : "reautorize a sessão para registrar as datas"}
+            </p>
+          </div>
         </header>
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -363,6 +377,42 @@ export default function PetEndoscopiaMetaReportPage() {
             </p>
           </div>
         </section>
+
+        <details className="rounded-3xl border border-black/10 bg-white p-6 md:p-8">
+          <summary className="cursor-pointer font-semibold">
+            Diagnóstico da sessão: contas acessíveis
+          </summary>
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="border-b border-black/10 text-xs uppercase tracking-[0.11em] text-[#72858a]">
+                <tr>
+                  <th className="px-3 py-3">Conta</th>
+                  <th className="px-3 py-3">ID</th>
+                  <th className="px-3 py-3">Investimento</th>
+                  <th className="px-3 py-3">Cliques</th>
+                  <th className="px-3 py-3">Selecionada</th>
+                </tr>
+              </thead>
+              <tbody>
+                {session.adAccounts?.map((item) => (
+                  <tr key={item.id} className="border-b border-black/5">
+                    <td className="px-3 py-4">{item.name || "Sem nome"}</td>
+                    <td className="px-3 py-4 font-mono text-xs">{item.id}</td>
+                    <td className="px-3 py-4">
+                      {money(item.insights?.spend, item.currency || "BRL")}
+                    </td>
+                    <td className="px-3 py-4">
+                      {integer(item.insights?.clicks)}
+                    </td>
+                    <td className="px-3 py-4">
+                      {item.id === account.id ? "Sim" : ""}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
 
         <details className="rounded-3xl border border-black/10 bg-white p-6 md:p-8">
           <summary className="cursor-pointer font-semibold">
