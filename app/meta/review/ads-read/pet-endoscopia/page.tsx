@@ -222,6 +222,27 @@ export default function PetEndoscopiaMetaReportPage() {
   const { account, campaigns, actions, businessActions } = report
   const insights = account.insights
   const currency = account.currency || "BRL"
+  const startedConversations = actions.find((action) =>
+    action.type.toLowerCase().includes("messaging_conversation_started"),
+  )
+  const tutorCampaign = campaigns.find((campaign) =>
+    campaign.campaign_name?.toLowerCase().includes("tutores"),
+  )
+  const vetCampaign = campaigns.find((campaign) =>
+    campaign.campaign_name?.toLowerCase().includes("veterin"),
+  )
+  const lowerCpcCampaign =
+    tutorCampaign && vetCampaign
+      ? n(tutorCampaign.cpc) <= n(vetCampaign.cpc)
+        ? tutorCampaign
+        : vetCampaign
+      : null
+  const higherCtrCampaign =
+    tutorCampaign && vetCampaign
+      ? n(tutorCampaign.ctr) >= n(vetCampaign.ctr)
+        ? tutorCampaign
+        : vetCampaign
+      : null
 
   return (
     <main className="min-h-screen bg-[#f3f1ec] px-4 py-8 text-[#17343c] md:px-8 md:py-12">
@@ -350,6 +371,61 @@ export default function PetEndoscopiaMetaReportPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </section>
+
+
+        <section className="rounded-3xl border border-black/10 bg-white p-6 md:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.17em] text-[#698087]">
+            Comentários e contexto
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold">
+            O que merece atenção neste ciclo
+          </h2>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-[#dce5e6] bg-[#f8faf9] p-5">
+              <p className="text-sm font-semibold text-[#345861]">
+                Resultado comercial
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#5d7075]">
+                {startedConversations?.value
+                  ? `A Meta atribuiu ${integer(startedConversations.value)} conversas iniciadas no período. Considerando o investimento total, o custo médio ficou em ${money(report.spend / startedConversations.value, currency)} por conversa iniciada.`
+                  : "A Meta não devolveu uma métrica inequívoca de conversa iniciada nesta sessão."}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#dce5e6] bg-[#f8faf9] p-5">
+              <p className="text-sm font-semibold text-[#345861]">
+                Comparativo de públicos
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#5d7075]">
+                {lowerCpcCampaign && higherCtrCampaign
+                  ? `Entre as duas campanhas principais, ${lowerCpcCampaign.campaign_name} apresentou o menor CPC (${money(lowerCpcCampaign.cpc, currency)}), enquanto ${higherCtrCampaign.campaign_name} apresentou o maior CTR (${decimal(higherCtrCampaign.ctr)}%). O equilíbrio sugere que os dois públicos continuam úteis, mas com papéis ligeiramente diferentes na eficiência de clique e taxa de resposta.`
+                  : "As campanhas seguem relativamente equilibradas, sem concentração excessiva de investimento em um único público."}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#dce5e6] bg-[#f8faf9] p-5">
+              <p className="text-sm font-semibold text-[#345861]">
+                Ponto de atenção
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#5d7075]">
+                O CTR da conta ficou em {decimal(insights.ctr)}%. Isso não deve ser lido isoladamente como bom ou ruim: o indicador precisa ser acompanhado junto do custo por conversa e da qualidade dos atendimentos que chegaram ao WhatsApp. Para o próximo ciclo, vale testar novos criativos sem interromper os conjuntos que já estão entregando conversas.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#dce5e6] bg-[#f8faf9] p-5">
+              <p className="text-sm font-semibold text-[#345861]">
+                Contexto do mercado
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#5d7075]">
+                O mercado pet brasileiro continua relevante e competitivo. Dados setoriais recentes da Abempet apontam serviços veterinários como um dos principais blocos de faturamento do setor. Para uma operação especializada como a Pet Endoscopia, isso reforça a importância de comunicar diferenciais técnicos e medir conversas qualificadas, e não apenas alcance e cliques.
+              </p>
+              <p className="mt-3 text-xs leading-5 text-[#809095]">
+                Fonte de contexto: Abempet, dados gerais do setor pet brasileiro.
+              </p>
+            </div>
           </div>
         </section>
 
