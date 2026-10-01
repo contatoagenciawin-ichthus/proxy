@@ -144,6 +144,8 @@ async function fetchAccountInsights(
     "cpc",
     "cpm",
     "frequency",
+    "date_start",
+    "date_stop",
   ].join(",")
 
   const path =
@@ -176,6 +178,8 @@ async function fetchCampaignInsights(
     "frequency",
     "actions",
     "cost_per_action_type",
+    "date_start",
+    "date_stop",
   ].join(",")
 
   const path =
