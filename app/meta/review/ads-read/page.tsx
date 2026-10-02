@@ -381,7 +381,7 @@ export default function AdsReadReviewPage() {
                   >
                     {session.adAccounts.map((account) => (
                       <option key={account.id} value={account.id}>
-                        {account.name || account.id}
+                        {account.name ? `${account.name} · ${account.id}` : account.id}
                       </option>
                     ))}
                   </select>
