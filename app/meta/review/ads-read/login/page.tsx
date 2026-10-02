@@ -6,6 +6,7 @@ const APP_ID = "1952034255371331"
 const REVIEW_SESSION_KEY = "proxy_meta_ads_read_review"
 const REVIEW_ACCESS_KEY = "proxy_meta_ads_read_review_key"
 const OAUTH_STATE_KEY = "proxy_meta_ads_read_oauth_state"
+const OAUTH_CALLBACK_STORAGE_KEY = "proxy_meta_oauth_callback"
 
 type Insights = {
   spend?: string
@@ -290,8 +291,31 @@ export default function AdsReadLoginReviewPage() {
       }
     }
 
+    function handleStorage(event: StorageEvent) {
+      if (
+        event.key !== OAUTH_CALLBACK_STORAGE_KEY ||
+        !event.newValue
+      ) {
+        return
+      }
+
+      try {
+        const payload = JSON.parse(event.newValue)
+        void handleMessage({
+          origin: window.location.origin,
+          data: payload,
+        } as MessageEvent)
+      } catch {
+        setStatus("Meta callback was received, but the cross-tab payload was invalid.")
+      }
+    }
+
     window.addEventListener("message", handleMessage)
-    return () => window.removeEventListener("message", handleMessage)
+    window.addEventListener("storage", handleStorage)
+    return () => {
+      window.removeEventListener("message", handleMessage)
+      window.removeEventListener("storage", handleStorage)
+    }
   }, [session.startedAt])
 
   function startAuthorization() {
