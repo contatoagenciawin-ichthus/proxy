@@ -105,8 +105,13 @@ export default function AdsReadReviewPage() {
   const [selectedAccountId, setSelectedAccountId] = useState("")
   const [keyStatus, setKeyStatus] = useState("")
   const [checkingKey, setCheckingKey] = useState(false)
+  const [targetAccountId, setTargetAccountId] = useState("")
 
   useEffect(() => {
+    const target =
+      new URLSearchParams(window.location.search).get("account_id") || ""
+    setTargetAccountId(target)
+
     const storedKey = window.sessionStorage.getItem(REVIEW_ACCESS_KEY)
     if (storedKey) setReviewKey(storedKey)
 
@@ -155,7 +160,10 @@ export default function AdsReadReviewPage() {
       setKeyStatus(
         `Review key validated in ${payload.environment || "current"} deployment. Opening Meta authorization...`,
       )
-      window.location.assign("/meta/review/ads-read/login")
+      const suffix = targetAccountId
+        ? `?account_id=${encodeURIComponent(targetAccountId)}`
+        : ""
+      window.location.assign(`/meta/review/ads-read/login${suffix}`)
     } catch (cause) {
       setKeyStatus(
         cause instanceof Error
@@ -171,7 +179,10 @@ export default function AdsReadReviewPage() {
     window.sessionStorage.removeItem(REVIEW_SESSION_KEY)
     setSession(null)
     setSelectedAccountId("")
-    window.location.assign("/meta/review/ads-read/login")
+    const suffix = targetAccountId
+      ? `?account_id=${encodeURIComponent(targetAccountId)}`
+      : ""
+    window.location.assign(`/meta/review/ads-read/login${suffix}`)
   }
 
   const selectedAccount =
@@ -264,6 +275,17 @@ export default function AdsReadReviewPage() {
             those metrics into a reporting view and concise performance
             analysis.
           </p>
+
+          {targetAccountId ? (
+            <div className="mt-6 rounded-2xl border border-emerald-300/30 bg-emerald-300/[0.08] p-5 text-sm leading-6 text-emerald-50">
+              <p className="font-semibold">Targeted ad account test</p>
+              <p className="mt-2">
+                After the review key is validated, this flow will authorize
+                Meta and directly probe{" "}
+                <code className="text-emerald-200">{targetAccountId}</code>.
+              </p>
+            </div>
+          ) : null}
 
           <div className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.07] p-5 text-sm leading-6 text-cyan-50">
             <p className="font-semibold">Review scope</p>
