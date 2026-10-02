@@ -568,17 +568,19 @@ export default function AdsReadReviewPage() {
                 Relatório para cliente
               </p>
               <h2 className="mt-2 text-xl font-semibold text-white">
-                Pet Endoscopia · relatório em português
+                {selectedAccount?.name || "Conta selecionada"} · relatório em português
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-cyan-50/90">
-                Abre uma visão preparada para apresentação ao cliente usando os mesmos Insights desta sessão, incluindo ações de negócio retornadas pela Meta quando disponíveis.
+                Abre uma visão preparada para apresentação ao cliente usando exatamente os Insights da conta selecionada nesta sessão.
               </p>
-              <a
-                href="/meta/review/ads-read/pet-endoscopia"
-                className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan-200 px-4 font-semibold text-slate-950 transition hover:bg-cyan-100"
-              >
-                Abrir relatório Pet Endoscopia
-              </a>
+              {selectedAccount ? (
+                <a
+                  href={`/meta/review/ads-read/client-report?account_id=${encodeURIComponent(selectedAccount.id)}`}
+                  className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan-200 px-4 font-semibold text-slate-950 transition hover:bg-cyan-100"
+                >
+                  Abrir relatório {selectedAccount.name || selectedAccount.id}
+                </a>
+              ) : null}
             </section>
 
             <section className="rounded-2xl border border-emerald-300/20 bg-emerald-300/[0.06] p-6">
