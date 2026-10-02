@@ -7,6 +7,8 @@ const REVIEW_SESSION_KEY = "proxy_meta_ads_read_review"
 const REVIEW_ACCESS_KEY = "proxy_meta_ads_read_review_key"
 const OAUTH_STATE_KEY = "proxy_meta_ads_read_oauth_state"
 const OAUTH_CALLBACK_STORAGE_KEY = "proxy_meta_oauth_callback"
+const OAUTH_CALLBACK_SESSION_KEY = "proxy_meta_oauth_callback_session"
+const OAUTH_RETURN_URL_KEY = "proxy_meta_oauth_return_url"
 
 type Insights = {
   spend?: string
@@ -310,6 +312,23 @@ export default function AdsReadLoginReviewPage() {
       }
     }
 
+    const storedCallback =
+      window.sessionStorage.getItem(OAUTH_CALLBACK_SESSION_KEY)
+    if (storedCallback) {
+      window.sessionStorage.removeItem(OAUTH_CALLBACK_SESSION_KEY)
+      try {
+        const payload = JSON.parse(storedCallback)
+        void handleMessage({
+          origin: window.location.origin,
+          data: payload,
+        } as MessageEvent)
+      } catch {
+        setStatus(
+          "Meta callback returned to Proxy, but the stored callback payload was invalid.",
+        )
+      }
+    }
+
     window.addEventListener("message", handleMessage)
     window.addEventListener("storage", handleStorage)
     return () => {
@@ -354,24 +373,18 @@ export default function AdsReadLoginReviewPage() {
       display: "popup",
     })
 
-    const popup = window.open(
-      `https://www.facebook.com/v26.0/dialog/oauth?${params.toString()}`,
-      "proxy-ads-read-review",
-      "width=620,height=780,resizable=yes,scrollbars=yes",
-    )
+    const returnUrl = `${window.location.pathname}${window.location.search}`
+    window.sessionStorage.setItem(OAUTH_RETURN_URL_KEY, returnUrl)
+    window.sessionStorage.removeItem(OAUTH_CALLBACK_SESSION_KEY)
 
-    if (!popup) {
-      setStatus(
-        "The browser blocked the Meta popup. Allow popups for this site and try again.",
-      )
-      return
-    }
-
-    popup.focus()
     setStatus(
       requestedAccountId
-        ? `Opening Meta authorization for ads_read. After authorization Proxy will directly probe ${requestedAccountId}.`
-        : "Opening Meta authorization and requesting ads_read only...",
+        ? `Opening Meta authorization for ads_read. After authorization Proxy will return here and directly probe ${requestedAccountId}.`
+        : "Opening Meta authorization and returning to this page after approval...",
+    )
+
+    window.location.assign(
+      `https://www.facebook.com/v26.0/dialog/oauth?${params.toString()}`,
     )
   }
 
