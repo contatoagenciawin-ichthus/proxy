@@ -215,9 +215,21 @@ export async function POST(request: Request) {
     const body = (await request.json()) as {
       code?: string
       redirectUri?: string
+      requestedAccountId?: string
     }
 
     const code = body.code?.trim() || ""
+    const requestedAccountIdRaw = body.requestedAccountId?.trim() || ""
+    const requestedAccountId = requestedAccountIdRaw
+      ? requestedAccountIdRaw.startsWith("act_")
+        ? requestedAccountIdRaw
+        : `act_${requestedAccountIdRaw}`
+      : ""
+
+    if (requestedAccountId && !/^act_\d+$/.test(requestedAccountId)) {
+      throw new MetaReviewError("Requested ad account ID is invalid.", 400)
+    }
+
     const expectedRedirectUri = new URL("/meta/callback", request.url).toString()
 
     if (!code) {
@@ -295,7 +307,47 @@ export async function POST(request: Request) {
     // Keep every account returned by Meta. The review flow previously truncated
     // the response to the first 10 accounts, which could hide valid client
     // accounts from the selector even when the authorized user had access.
-    const accounts = accountsPayload.data || []
+    const accounts = [...(accountsPayload.data || [])]
+
+    let requestedAccountProbe: {
+      requested: string | null
+      accessible: boolean
+      error: string | null
+    } = {
+      requested: requestedAccountId || null,
+      accessible: requestedAccountId
+        ? accounts.some((account) => account.id === requestedAccountId)
+        : false,
+      error: null,
+    }
+
+    if (
+      requestedAccountId &&
+      !accounts.some((account) => account.id === requestedAccountId)
+    ) {
+      try {
+        const requestedAccount = await graphRequest<AdAccount>(
+          config.graphVersion,
+          `/${requestedAccountId}?fields=id,name,account_status,currency,timezone_name`,
+          accessToken,
+        )
+        accounts.push(requestedAccount)
+        requestedAccountProbe = {
+          requested: requestedAccountId,
+          accessible: true,
+          error: null,
+        }
+      } catch (error) {
+        requestedAccountProbe = {
+          requested: requestedAccountId,
+          accessible: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Direct ad account lookup failed.",
+        }
+      }
+    }
 
     const accountsWithInsights = await Promise.all(
       accounts.map(async (account) => {
@@ -379,6 +431,7 @@ export async function POST(request: Request) {
         userId: debugPayload.data?.user_id || null,
       },
       adAccounts: accountsWithInsights,
+      requestedAccountProbe,
       primaryAccountId: primaryAccount?.id || null,
       campaignInsights: primaryCampaignInsights,
       campaignInsightsError: primaryAccount
