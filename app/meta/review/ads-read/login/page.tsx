@@ -74,6 +74,12 @@ type ReviewSession = {
       error: string | null
     }
   >
+  requestedAccountId?: string
+  requestedAccountProbe?: {
+    requested: string | null
+    accessible: boolean
+    error: string | null
+  }
   exchangeError?: string
 }
 
@@ -108,15 +114,33 @@ export default function AdsReadLoginReviewPage() {
   )
   const [session, setSession] = useState<ReviewSession>({})
   const [exchanging, setExchanging] = useState(false)
+  const [targetAccountId, setTargetAccountId] = useState("")
 
   useEffect(() => {
+    const target =
+      new URLSearchParams(window.location.search).get("account_id") || ""
+    setTargetAccountId(target)
+
     const stored = window.sessionStorage.getItem(REVIEW_SESSION_KEY)
     if (stored) {
       try {
-        setSession(JSON.parse(stored) as ReviewSession)
+        const parsed = JSON.parse(stored) as ReviewSession
+        if (target && parsed.requestedAccountId !== target) {
+          window.sessionStorage.removeItem(REVIEW_SESSION_KEY)
+          setSession({})
+          setStatus(
+            `Target account ${target} detected. Previous review session cleared; start a fresh authorization.`,
+          )
+        } else {
+          setSession(parsed)
+        }
       } catch {
         window.sessionStorage.removeItem(REVIEW_SESSION_KEY)
       }
+    } else if (target) {
+      setStatus(
+        `Target account ${target} detected. Ready for a fresh ads_read authorization.`,
+      )
     }
 
     async function handleMessage(event: MessageEvent) {
@@ -204,6 +228,8 @@ export default function AdsReadLoginReviewPage() {
           campaignInsights: exchange.campaignInsights || [],
           campaignInsightsError: exchange.campaignInsightsError || null,
           campaignInsightsByAccount: exchange.campaignInsightsByAccount || {},
+          requestedAccountId: requestedAccountId || undefined,
+          requestedAccountProbe: exchange.requestedAccountProbe,
           completedAt: new Date().toISOString(),
         }
 
@@ -246,6 +272,9 @@ export default function AdsReadLoginReviewPage() {
           adAccountsRetrieved: false,
           accountInsightsRetrieved: false,
           campaignInsightsRetrieved: false,
+          requestedAccountId:
+            new URLSearchParams(window.location.search).get("account_id") ||
+            undefined,
           exchangeError: message,
           completedAt: new Date().toISOString(),
         }
@@ -266,6 +295,9 @@ export default function AdsReadLoginReviewPage() {
   }, [session.startedAt])
 
   function startAuthorization() {
+    const requestedAccountId =
+      new URLSearchParams(window.location.search).get("account_id") || ""
+
     const fresh: ReviewSession = {
       startedAt: new Date().toISOString(),
       metaLoginCompleted: false,
@@ -275,6 +307,7 @@ export default function AdsReadLoginReviewPage() {
       adAccountsRetrieved: false,
       accountInsightsRetrieved: false,
       campaignInsightsRetrieved: false,
+      requestedAccountId: requestedAccountId || undefined,
     }
 
     window.sessionStorage.setItem(
@@ -312,7 +345,9 @@ export default function AdsReadLoginReviewPage() {
 
     popup.focus()
     setStatus(
-      "Opening Meta authorization and requesting ads_read only...",
+      requestedAccountId
+        ? `Opening Meta authorization for ads_read. After authorization Proxy will directly probe ${requestedAccountId}.`
+        : "Opening Meta authorization and requesting ads_read only...",
     )
   }
 
@@ -320,7 +355,11 @@ export default function AdsReadLoginReviewPage() {
     window.sessionStorage.removeItem(REVIEW_SESSION_KEY)
     window.sessionStorage.removeItem(OAUTH_STATE_KEY)
     setSession({})
-    setStatus("Ready to start Meta authorization for ads_read.")
+    setStatus(
+      targetAccountId
+        ? `Target account ${targetAccountId} detected. Ready for a fresh ads_read authorization.`
+        : "Ready to start Meta authorization for ads_read.",
+    )
   }
 
   const completed = Boolean(
@@ -349,6 +388,17 @@ export default function AdsReadLoginReviewPage() {
             retrieves read-only advertising performance data from accounts the
             authorized Meta user can access.
           </p>
+
+          {targetAccountId ? (
+            <div className="mt-6 rounded-2xl border border-emerald-300/30 bg-emerald-300/[0.08] p-5 text-sm leading-6 text-emerald-50">
+              <p className="font-semibold">Targeted ad account test</p>
+              <p className="mt-2">
+                This authorization will directly test{" "}
+                <code className="text-emerald-200">{targetAccountId}</code>{" "}
+                after Meta login, even if it is absent from /me/adaccounts.
+              </p>
+            </div>
+          ) : null}
 
           <div className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.07] p-5 text-sm leading-6 text-cyan-50">
             <p className="font-semibold">Read-only review behavior</p>
