@@ -3,6 +3,8 @@
 import { useEffect, useMemo } from "react"
 
 const OAUTH_CALLBACK_STORAGE_KEY = "proxy_meta_oauth_callback"
+const OAUTH_CALLBACK_SESSION_KEY = "proxy_meta_oauth_callback_session"
+const OAUTH_RETURN_URL_KEY = "proxy_meta_oauth_return_url"
 
 export default function CallbackClient() {
   const result = useMemo(() => {
@@ -27,6 +29,19 @@ export default function CallbackClient() {
       error: result.error || undefined,
       errorDescription: result.errorDescription || undefined,
       deliveredAt: Date.now(),
+    }
+
+    const returnUrl =
+      window.sessionStorage.getItem(OAUTH_RETURN_URL_KEY) || ""
+
+    if (returnUrl) {
+      window.sessionStorage.setItem(
+        OAUTH_CALLBACK_SESSION_KEY,
+        JSON.stringify(payload),
+      )
+      window.sessionStorage.removeItem(OAUTH_RETURN_URL_KEY)
+      window.location.replace(returnUrl)
+      return
     }
 
     try {
@@ -56,7 +71,7 @@ export default function CallbackClient() {
         </h1>
         <p className="mt-4 leading-7 text-slate-300">
           {success
-            ? "The authorization code was returned to Proxy and sent back to the review tab. You can close this tab and continue the review flow."
+            ? "The authorization code was returned to Proxy. You will be returned to the review flow automatically."
             : result.errorDescription || result.error || "No authorization code was returned by Meta."}
         </p>
         <button
