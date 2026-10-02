@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo } from "react"
 
+const OAUTH_CALLBACK_STORAGE_KEY = "proxy_meta_oauth_callback"
+
 export default function CallbackClient() {
   const result = useMemo(() => {
     if (typeof window === "undefined") {
@@ -18,18 +20,27 @@ export default function CallbackClient() {
   }, [])
 
   useEffect(() => {
-    if (!window.opener) return
+    const payload = {
+      type: "PROXY_META_OAUTH_CALLBACK",
+      code: result.code || undefined,
+      state: result.state || undefined,
+      error: result.error || undefined,
+      errorDescription: result.errorDescription || undefined,
+      deliveredAt: Date.now(),
+    }
 
-    window.opener.postMessage(
-      {
-        type: "PROXY_META_OAUTH_CALLBACK",
-        code: result.code || undefined,
-        state: result.state || undefined,
-        error: result.error || undefined,
-        errorDescription: result.errorDescription || undefined,
-      },
-      window.location.origin,
-    )
+    try {
+      window.localStorage.setItem(
+        OAUTH_CALLBACK_STORAGE_KEY,
+        JSON.stringify(payload),
+      )
+    } catch {
+      // The opener path below remains available as a fallback.
+    }
+
+    if (window.opener) {
+      window.opener.postMessage(payload, window.location.origin)
+    }
   }, [result])
 
   const success = Boolean(result.code) && !result.error
@@ -45,7 +56,7 @@ export default function CallbackClient() {
         </h1>
         <p className="mt-4 leading-7 text-slate-300">
           {success
-            ? "The authorization code was returned to the Proxy review window. You can close this popup and continue the review flow."
+            ? "The authorization code was returned to Proxy and sent back to the review tab. You can close this tab and continue the review flow."
             : result.errorDescription || result.error || "No authorization code was returned by Meta."}
         </p>
         <button
