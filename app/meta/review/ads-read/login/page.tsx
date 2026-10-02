@@ -86,6 +86,11 @@ type ExchangePayload = {
   campaignInsights?: ReviewSession["campaignInsights"]
   campaignInsightsError?: string | null
   campaignInsightsByAccount?: ReviewSession["campaignInsightsByAccount"]
+  requestedAccountProbe?: {
+    requested: string | null
+    accessible: boolean
+    error: string | null
+  }
   verification?: {
     adsReadGranted: boolean
     tokenValid: boolean
@@ -160,6 +165,8 @@ export default function AdsReadLoginReviewPage() {
 
       try {
         const redirectUri = `${window.location.origin}/meta/callback`
+        const requestedAccountId =
+          new URLSearchParams(window.location.search).get("account_id") || ""
         const response = await fetch("/api/meta/review/ads-read/exchange", {
           method: "POST",
           cache: "no-store",
@@ -170,6 +177,7 @@ export default function AdsReadLoginReviewPage() {
           body: JSON.stringify({
             code: payload.code,
             redirectUri,
+            requestedAccountId,
           }),
         })
 
@@ -212,7 +220,11 @@ export default function AdsReadLoginReviewPage() {
           next.accountInsightsRetrieved
         ) {
           setStatus(
-            "ads_read authorization succeeded and read-only advertising insights were retrieved.",
+            exchange.requestedAccountProbe?.requested
+              ? exchange.requestedAccountProbe.accessible
+                ? `ads_read authorization succeeded. Requested account ${exchange.requestedAccountProbe.requested} was also resolved directly and added to the report.`
+                : `ads_read authorization succeeded, but requested account ${exchange.requestedAccountProbe.requested} could not be resolved directly: ${exchange.requestedAccountProbe.error || "unknown error"}`
+              : "ads_read authorization succeeded and read-only advertising insights were retrieved.",
           )
         } else {
           setStatus(
