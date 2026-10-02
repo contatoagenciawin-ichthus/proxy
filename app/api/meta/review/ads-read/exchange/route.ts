@@ -288,11 +288,14 @@ export async function POST(request: Request) {
 
     const accountsPayload = await graphRequest<{ data?: AdAccount[] }>(
       config.graphVersion,
-      "/me/adaccounts?fields=id,name,account_status,currency,timezone_name&limit=25",
+      "/me/adaccounts?fields=id,name,account_status,currency,timezone_name&limit=100",
       accessToken,
     )
 
-    const accounts = (accountsPayload.data || []).slice(0, 10)
+    // Keep every account returned by Meta. The review flow previously truncated
+    // the response to the first 10 accounts, which could hide valid client
+    // accounts from the selector even when the authorized user had access.
+    const accounts = accountsPayload.data || []
 
     const accountsWithInsights = await Promise.all(
       accounts.map(async (account) => {
