@@ -205,12 +205,21 @@ export function InstitutionalHome() {
             <a href="#contato" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Contato</a>
           </nav>
 
-          <a
-            href="mailto:contato@proxytechnology.com.br"
-            className="border border-white/15 px-4 py-2 text-xs font-semibold text-white/70 transition hover:border-cyan-400/50 hover:text-white"
-          >
-            Fale conosco
-          </a>
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-300">PT</span>
+            <Link
+              href="/en"
+              className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/40 transition hover:text-white"
+            >
+              EN
+            </Link>
+            <a
+              href="mailto:contato@proxytechnology.com.br"
+              className="hidden border border-white/15 px-4 py-2 text-xs font-semibold text-white/70 transition hover:border-cyan-400/50 hover:text-white sm:inline-flex"
+            >
+              Fale conosco
+            </a>
+          </div>
         </div>
       </header>
 

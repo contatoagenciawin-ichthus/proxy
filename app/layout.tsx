@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { headers } from 'next/headers'
 import { siteDescription, siteName, siteUrl } from '@/lib/site'
 import './globals.css'
 
@@ -69,13 +70,16 @@ export const viewport: Viewport = {
   colorScheme: 'dark',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const requestHeaders = await headers()
+  const locale = requestHeaders.get('x-proxy-locale') === 'en' ? 'en' : 'pt-BR'
+
   return (
-    <html lang="pt-BR" className="dark">
+    <html lang={locale} className="dark">
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased bg-black text-white`}>
         {children}
         <Analytics />
