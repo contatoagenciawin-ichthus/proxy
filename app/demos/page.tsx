@@ -10,7 +10,7 @@ import {
 } from "lucide-react"
 
 export const metadata: Metadata = {
-  title: "Demonstrações | Proxy Technology",
+  title: "Demonstrações",
   description:
     "Explore a plataforma de relacionamento da Proxy e teste a experiência de atendimento conversacional com IA.",
 }
