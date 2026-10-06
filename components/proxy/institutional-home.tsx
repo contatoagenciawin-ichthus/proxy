@@ -202,6 +202,7 @@ export function InstitutionalHome() {
             <a href="#audiencia" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Audiência</a>
             <a href="#infraestrutura" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Infraestrutura</a>
             <a href="#meta" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Meta</a>
+            <Link href="/demos" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Demos</Link>
             <a href="#contato" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Contato</a>
           </nav>
 
@@ -255,6 +256,9 @@ export function InstitutionalHome() {
               <a href="#infraestrutura" className="border border-white/20 px-6 py-3 text-sm font-semibold text-white/70 transition hover:border-white/40 hover:text-white">
                 Ver capacidade técnica
               </a>
+              <Link href="/demos" className="border border-cyan-300/30 px-6 py-3 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-300/[0.05]">
+                Testar demonstrações
+              </Link>
             </div>
           </div>
 
