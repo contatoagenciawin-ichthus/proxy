@@ -458,9 +458,6 @@ export function InstitutionalHome() {
               Não tratamos o WhatsApp como um botão isolado. A integração nasce junto com consentimento, regras de atendimento, eventos, histórico e governança.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <Link href="/meta/onboarding" className="inline-flex items-center gap-2 bg-cyan-400 px-5 py-3 text-sm font-semibold text-black transition hover:bg-cyan-300">
-                Ambiente WhatsApp Business <ArrowUpRight className="h-4 w-4" />
-              </Link>
               <Link href="/privacy" className="border border-white/15 px-5 py-3 text-sm font-semibold text-white/60 transition hover:border-white/35 hover:text-white">
                 Política de privacidade
               </Link>
@@ -540,7 +537,6 @@ export function InstitutionalHome() {
           <div className="flex flex-wrap gap-x-6 gap-y-3 text-xs text-white/35">
             <Link href="/privacy" className="transition hover:text-white">Privacidade</Link>
             <Link href="/terms" className="transition hover:text-white">Termos de uso</Link>
-            <Link href="/meta/onboarding" className="transition hover:text-white">WhatsApp Business</Link>
             <a href="https://www.ichthusmkt.com.br" target="_blank" rel="noreferrer" className="transition hover:text-white">Ichthus Marketing</a>
           </div>
         </div>
