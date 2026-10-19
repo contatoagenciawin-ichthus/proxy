@@ -9,6 +9,7 @@ create table proxy_meta.ichthus_exchange_permit_uses (
   expires_at timestamptz not null,
   consumed_at timestamptz not null,
   primary key (organization_id,permit_id),
+  unique (organization_id,nonce_digest),
   check (expires_at > consumed_at)
 );
 create index ichthus_exchange_permit_uses_expiry_idx
