@@ -1,6 +1,6 @@
 import { createHash, createHmac } from "node:crypto"
 import { NextResponse } from "next/server"
-import { resolveMetaHandoffCandidates } from "../../../../../lib/meta-onboarding-handoffs.mjs"
+import { ICHTHUS_ASSET, resolveMetaHandoffCandidates } from "../../../../../lib/meta-onboarding-handoffs.mjs"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -323,7 +323,9 @@ export async function POST(request: Request) {
 
     const handoff = await handoffCredential({
       url: resolved.client.handoffUrl,
-      appSecret: config.appSecret,
+      appSecret: resolved.client.wabaId === ICHTHUS_ASSET.wabaId
+        ? (process.env.ICHTHUS_HANDOFF_SIGNING_SECRET || "")
+        : config.appSecret,
       payload: {
         wabaId: resolved.client.wabaId,
         phoneNumberId: resolved.client.phoneNumberId,
