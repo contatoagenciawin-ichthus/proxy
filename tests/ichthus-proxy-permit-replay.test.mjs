@@ -42,6 +42,24 @@ test("Proxy concurrent requests have precisely one accepted consumption",async()
  assert.equal(results.filter(x=>x.status==="rejected").length,11);
 });
 
+test("Proxy rejects a second signed permit targeting the same OAuth nonce",async()=>{
+ const seenPermit=new Set(),seenNonce=new Set();
+ const consumeOnce=async({organizationId,permitId,nonceDigest})=>{
+  const pid=organizationId+":"+permitId,nonce=organizationId+":"+nonceDigest;
+  if(seenPermit.has(pid)||seenNonce.has(nonce))return false;
+  seenPermit.add(pid);seenNonce.add(nonce);return true;
+ };
+ await consumeIchthusProxyPermit({...base,consumeOnce});
+ const alternate=issueIchthusProxyExchangePermit({
+  organizationId,configId,nonceDigest:"a".repeat(64),
+  permitId:"another_unique_permit_id_32_chars_xx",secret,now,
+ });
+ await assert.rejects(
+  consumeIchthusProxyPermit({...base,permit:alternate,consumeOnce}),
+  /proxy_permit_already_consumed/
+ );
+});
+
 test("Proxy validates signature, tenant and expiry BEFORE touching its store",async()=>{
  let called=0;
  const consumeOnce=async()=>{called++;return true;};
@@ -66,7 +84,7 @@ test("PostgreSQL adapter contract uses unique insert, never an unlocked read-the
   insertAndCommit:async operation=>{received=operation;return {rowCount:1};},
  });
  assert.equal(ok,true);
- assert.match(received.sql,/on conflict \(organization_id, permit_id\) do nothing/);
+ assert.match(received.sql,/on conflict do nothing/);
  assert.match(received.sql,/returning permit_id/);
  assert.equal(received.params[0],organizationId);
 });
