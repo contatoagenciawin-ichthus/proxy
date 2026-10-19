@@ -18,3 +18,13 @@ Data: 19/10/2026. **Não conectado à rota real.** A página da LA continua send
 6. Confirmar Vercel preview sem compartilhamento indevido de variáveis de produção e autorizar separadamente migration 0109, segredos, deploy e Meta.
 
 **Limite:** os helpers foram colocados em código com testes offline; nenhum segredo foi configurado, nenhuma URL de produção foi alterada, nenhum onboarding foi iniciado e nenhum endpoint foi ativado. O ticket apresentado é um contrato técnico em revisão, não autorização operacional.
+
+
+## Proteção de replay no serviço Proxy — 19/10/2026
+
+- `lib/ichthus-proxy-permit-replay.mjs`: verificação criptográfica prévia do ticket e encaminhamento para armazenamento central obrigatório e atômico. Sem armazenamento disponível, falha fechada; nenhum código OAuth é trocado.
+- `db/staged/0001_ichthus_proxy_permit_replay_STAGED.sql`: esquema proposto, **não aplicado**, com restrições UNIQUE tanto de `(organization_id, permit_id)` quanto de `(organization_id, nonce_digest)`. Um segundo ticket para o mesmo nonce também é rejeitado. Nenhuma permissão operacional concedida.
+- `tests/ichthus-proxy-permit-replay.test.mjs`: cenários de replay, concorrência, tenant divergente, expiração, ausência do armazenamento, mesmo nonce com outro permitId e contrato SQL.
+- No momento o repositório Proxy não declara um cliente PostgreSQL nem projeto de banco exclusivo para este ledger. O adaptador aceita apenas `insertAndCommit` injetado; **a implementação de persistência real e a aplicação do esquema NÃO foram concluídas**. Uma implementação em memória não atenderá o requisito multi-instância da Vercel.
+- Antes de ativar, selecionar e homologar armazenamento exclusivo da Proxy, política RLS e papel mínimo; testar transação confirmada, UNIQUE concorrente e disponibilidade. O serviço emissor CRM também precisará demonstrar a ligação entre consumo do state e emissão de ticket, inclusive após falha de comunicação. Validar o `config_id` da LA por fonte apropriada.
+- A rota `/api/meta/onboarding/exchange` permanece inalterada. Eduardo Brasil não pode depender destes helpers; a futura rota Ichthus deve exigir `consumeIchthusProxyPermit` e rejeitar requisições diretas do navegador antes da Meta Graph API.
