@@ -5,7 +5,7 @@
 ## Escopo deste PR
 
 - Mantém a conexão legada Eduardo com o **mesmo WABA ID, Phone Number ID e URL**.
-- Inclui Ichthus na lista de destinos **somente** quando `ICHTHUS_META_HANDOFF_ENABLED=true` **e** `ICHTHUS_META_HANDOFF_URL` for uma URL HTTPS explicitamente aceita.
+- Inclui Ichthus na lista de destinos **somente** quando `ICHTHUS_META_HANDOFF_ENABLED=true`, `ICHTHUS_META_HANDOFF_URL` for uma URL HTTPS explicitamente aceita **e** `ICHTHUS_HANDOFF_SIGNING_SECRET` tiver ao menos 32 caracteres. O destino só pode ser `proxy-relationship-demo.vercel.app` ou `relationship.ichthusmkt.com.br`, e deve corresponder ao endpoint exato.
 - Para Ichthus, exige correspondência **exata e simultânea** de WABA `107697061976892` e Phone Number ID `107612478652254`; nunca usa número textual para roteamento e nunca seleciona Ichthus na ausência de identificadores.
 - LA não é incluída nem modificada; manter o fluxo e os webhooks atuais separados.
 - Não altera callback global da Meta, App Secret, token de Eduardo/LA, banco, variáveis Vercel nem integração real.
@@ -16,7 +16,7 @@
 2. Confirmar, com testes, que o endpoint receptor realmente existe no domínio indicado. Não usar a URL aprovada apenas por corresponder ao formato.
 3. Verificar se a Ichthus tem uma WABA nova em relação ao registro histórico de teste e documentar a vinculação ao tenant correto. Não substituir os IDs históricos.
 4. Validar o tratamento de credenciais e webhooks isolados da Ichthus, respeitando os roteamentos de Eduardo e LA.
-5. Somente após revisão e autorização específica de produção, definir as duas variáveis no projeto `proxy` e publicar a alteração. Sem ambas, permanece desabilitada.
+5. Somente após revisão e autorização específica, configurar no projeto `proxy` as três variáveis `ICHTHUS_META_HANDOFF_ENABLED`, `ICHTHUS_META_HANDOFF_URL` e `ICHTHUS_HANDOFF_SIGNING_SECRET`. A assinatura Ichthus deve utilizar segredo aleatório dedicado, idêntico e protegido no CRM receptor. **Não copiar `META_APP_SECRET` para o CRM**. O fluxo Eduardo conserva a assinatura legada e fica inalterado. Sem os requisitos, Ichthus permanece desabilitada.
 6. Repetir apenas a autorização de credencial no Embedded Signup, quando solicitado. O código anterior da Meta não deve ser reutilizado. Não desconectar o WhatsApp Business App.
 7. Depois, verificar WABA subscription, webhook por WABA, inbound real consentido, outbound humano e status, sem automação de IA.
 
