@@ -36,3 +36,8 @@ A suíte [`g2-ichthus-permit-security.yml`](../.github/workflows/g2-ichthus-perm
 ## Gate seguinte
 
 Registrar uma proposta de implantação detalhada para `proxy-whapp-platform` e aprovar separadamente **qual branch descartável**, database, papel mínimo e variáveis por ambiente poderão ser criados. Antes disso, continuar apenas com código/tests offline e revisão de permissões read-only.
+
+
+### Papéis efetivos observados em `proxy-whapp-platform/staging`
+
+Consulta read-only de `pg_roles` retornou `cloud_admin` (superuser e BYPASSRLS), `neon_service` (BYPASSRLS), `neon_superuser` (NOLOGIN e BYPASSRLS) e `neondb_owner` (LOGIN e BYPASSRLS). **Não apareceu papel de aplicação restrito de replay**. A integração não pode usar nenhum desses papéis como conexão operacional, justamente porque não oferecem isolamento RLS suficiente para o novo processo. Essa checagem também não configura nem altera role existente.
