@@ -5,6 +5,7 @@ on:
     paths:
       - "lib/ichthus-*.mjs"
       - "tests/ichthus-*.test.mjs"
+      - "tests/ichthus-proxy-replay-pg.integration.test.mjs"
       - "tests/sql/ichthus-proxy-replay-ledger.sql"
       - "tests/sql/ichthus-proxy-replay-concurrency.sh"
       - "db/staged/0001_ichthus_proxy_permit_replay_STAGED.sql"
@@ -52,3 +53,14 @@ jobs:
           PGDATABASE: proxy_g2_ephemeral
           PGPASSWORD: github_test_only
         run: bash tests/sql/ichthus-proxy-replay-concurrency.sh
+      - name: Install isolated PostgreSQL Node driver for disposable test
+        run: |
+          mkdir -p /tmp/proxy-g2-node
+          npm install --prefix /tmp/proxy-g2-node --no-save --package-lock=false --ignore-scripts pg@8.16.3
+      - name: Verify Node adapter with real restricted PostgreSQL pool and concurrency
+        env:
+          PGHOST: 127.0.0.1
+          PGPORT: "5432"
+          PGDATABASE: proxy_g2_ephemeral
+          G2_TEST_PG_REQUIRE: /tmp/proxy-g2-node/package.json
+        run: node --test tests/ichthus-proxy-replay-pg.integration.test.mjs
