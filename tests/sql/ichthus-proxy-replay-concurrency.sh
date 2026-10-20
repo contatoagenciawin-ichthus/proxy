@@ -42,7 +42,7 @@ run_wave() {
       values ('1715a7b9-5209-4e7c-8439-84658061904f',
               '$permit','$nonce',now()+interval '60 seconds',now())
       on conflict do nothing returning permit_id;"
-    (psql -X -v ON_ERROR_STOP=1 -At -c "$sql" >"$workdir/$kind-$i.out") &
+    (psql -X -v ON_ERROR_STOP=1 -qAt -c "$sql" >"$workdir/$kind-$i.out") &
     pids+=("$!")
   done
   for pid in "${pids[@]}"; do wait "$pid"; done
