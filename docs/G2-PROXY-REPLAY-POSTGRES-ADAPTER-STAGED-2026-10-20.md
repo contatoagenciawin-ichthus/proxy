@@ -31,3 +31,14 @@
 - A prova refere-se ao comportamento real das constraints PostgreSQL e da role sintética, **não** à integração do pool Node com conexão Neon real, a qualquer endpoint OAuth ou a emissão de credenciais Meta.
 
 **Pendente:** implantar banco isolado autorizado, role LOGIN restrita e conexão do serviço em ambiente de homologação, sem usar os papéis existentes com `BYPASSRLS`; revisar o tratamento de erro no commit e executar teste de integração de ponta a ponta com driver real antes de ligar o endpoint.
+
+
+## Node.js + PostgreSQL real e isolado — evidência 20/10/2026
+
+- Teste `tests/ichthus-proxy-replay-pg.integration.test.mjs` exercita `createIchthusProxyReplayStore` e `consumeProxyPermitPostgresCommitted` com `pg.Pool` real contra **PostgreSQL 17 descartável** de GitHub Actions.
+- O driver `pg@8.16.3` foi instalado apenas em `/tmp/proxy-g2-node` no executor efêmero; o repositório e seus lockfiles de produção não foram modificados por essa instalação. O teste só executa quando host `127.0.0.1`, base `proxy_g2_ephemeral` e path temporário esperado são fornecidos.
+- Após a criação de role/login sintético no ambiente efêmero, a suite Node verifica 12 pedidos paralelos do mesmo ticket (1 sucesso, 11 replays), 9 pedidos com ticket distinto e mesmo nonce (1 sucesso, 8 replays), novo replay após commit, negação entre tenants por RLS e recusa de uma conexão administrativa `postgres`.
+- **GitHub Actions execução #16, commit `58562218`, aprovada.** Os logs demonstram o teste de integração como `ok 1`, **sem SKIP**, na etapa separada `Verify Node adapter with real restricted PostgreSQL pool and concurrency`. O arquivo aparece como `SKIP` apenas na primeira passagem genérica de Node sem variáveis de integração, conforme planejado.
+- Esse marco valida transação e commit do adaptador com driver real e papel de teste; não comprova acesso ao Neon, implantação Vercel, autorização Meta nem conexão WhatsApp operacional.
+
+Próximo gate operacional: aprovar ambiente Neon isolado, login mínimo efetivo, driver e variáveis privadas apenas em preview, prova de negação de acesso a tabelas `core` e a outras organizações; depois testar comunicação CRM→Proxy com código/token fictícios. Não realizar merge ou ativação antes desses gates.
