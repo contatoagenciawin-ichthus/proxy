@@ -20,3 +20,14 @@
 6. Não modificar `app/api/meta/onboarding/exchange/route.ts` legado usado por Eduardo; não mudar callback global, tokens nem canais existentes.
 
 **Rollback futuro:** desativar flags e LOGIN de integração sem apagar os registros de consumo (necessários à garantia anti-replay). **Nenhuma mudança real foi executada nesta rodada.**
+
+
+## Homologação de concorrência TCP no PostgreSQL descartável (20/10/2026)
+
+- `tests/sql/ichthus-proxy-replay-concurrency.sh` cria **apenas no banco efêmero do CI** o login sintético `proxy_meta_ichthus_replay_login`, herda a role restrita de escrita e executa processos `psql` independentes por conexão.
+- A bateria verifica duas disputas: 12 requisições com `permit_id` idêntico e 9 com `permit_id` distinto mas `nonce_digest` idêntico. Uma única inserção por disputa pode retornar `permit_id`, em transações autocommit independentes; uma consulta de conexão separada confirma as duas linhas persistidas.
+- O teste recusa host ou database diferentes de `127.0.0.1/proxy_g2_ephemeral`; não conecta Neon nem Meta.
+- GitHub Actions execução **#13 falhou no coletor do teste**, que contava etiquetas de comando do `psql` como se fossem linhas retornadas. A captura foi corrigida com `psql -qAt` e **execução #14 passou** no commit `ea0ab8af`.
+- A prova refere-se ao comportamento real das constraints PostgreSQL e da role sintética, **não** à integração do pool Node com conexão Neon real, a qualquer endpoint OAuth ou a emissão de credenciais Meta.
+
+**Pendente:** implantar banco isolado autorizado, role LOGIN restrita e conexão do serviço em ambiente de homologação, sem usar os papéis existentes com `BYPASSRLS`; revisar o tratamento de erro no commit e executar teste de integração de ponta a ponta com driver real antes de ligar o endpoint.
