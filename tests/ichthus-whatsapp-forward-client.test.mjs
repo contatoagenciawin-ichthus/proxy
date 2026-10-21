@@ -40,3 +40,19 @@ test("G2 forwarding rejects unapproved phone, non-TLS and failure",async()=>{
   secret,fetchImpl:async()=>({ok:false}),now,
  }),/ichthus_forward_delivery_failed/);
 });
+
+test("G2 protected preview forwarding uses bypass only on vercel.app destination",async()=>{
+ const bypass="A".repeat(32);
+ let sent=0;
+ await forwardIchthusVerifiedWhatsApp({
+  events,secret,endpoint:"https://crm-preview.vercel.app/api/relationship/whatsapp/inbound",
+  vercelProtectionBypass:bypass,now,
+  fetchImpl:async(url,req)=>{sent++;assert.equal(req.headers["x-vercel-protection-bypass"],bypass);assert.equal(req.headers["x-proxy-inbound-signature"].startsWith("sha256="),true);return {ok:true}},
+ });
+ assert.equal(sent,1);
+ await assert.rejects(forwardIchthusVerifiedWhatsApp({
+  events,secret,endpoint:"https://example.invalid/api/relationship/whatsapp/inbound",
+  vercelProtectionBypass:bypass,now,fetchImpl:async()=>{sent++;return {ok:true}},
+ }),/ichthus_forward_unavailable/);
+ assert.equal(sent,1);
+});
