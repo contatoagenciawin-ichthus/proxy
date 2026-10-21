@@ -43,3 +43,14 @@ test("G2 CRM outage does not falsely acknowledge WhatsApp receipt",async()=>{
  const response=await handleIchthusMetaWebhook(fake(),{env,now,fetchImpl:async()=>({ok:false})});
  assert.equal(response.status,503);
 });
+
+test("G2 streaming ingress bounds chunked payload before allocating full request",async()=>{
+ const oversized=Buffer.alloc(1024*1024+1,32);
+ const forged=new Request("https://proxy.invalid/api/meta/ichthus/whatsapp/webhook",{
+  method:"POST",headers:{"content-type":"application/json"},body:oversized,
+ });
+ let calls=0;
+ const res=await handleIchthusMetaWebhook(forged,{env,now,fetchImpl:async()=>{calls++;return {ok:true}}});
+ assert.equal(res.status,413);
+ assert.equal(calls,0);
+});
