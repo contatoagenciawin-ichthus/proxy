@@ -1,20 +1,12 @@
 import { createHash, createHmac } from "node:crypto"
 import { NextResponse } from "next/server"
+import { ICHTHUS_ASSET, resolveMetaHandoffCandidates } from "../../../../../lib/meta-onboarding-handoffs.mjs"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 const DEFAULT_APP_ID = "1952034255371331"
 const DEFAULT_GRAPH_VERSION = "v26.0"
-
-const CLIENT_HANDOFFS = [
-  {
-    wabaId: "269938242876600",
-    phoneNumberId: "280401731826708",
-    handoffUrl:
-      "https://eduardobrasil.fonsecabrasilserrao.com/api/whatsapp/meta/credentials",
-  },
-] as const
 
 type OAuthTokenResponse = {
   access_token?: string
@@ -128,10 +120,9 @@ async function resolveClientAsset(input: {
   const requestedWabaId = input.requestedWabaId?.trim() || ""
   const requestedPhoneNumberId = input.requestedPhoneNumberId?.trim() || ""
 
-  const candidates = CLIENT_HANDOFFS.filter((client) => {
-    if (requestedWabaId && client.wabaId !== requestedWabaId) return false
-    if (requestedPhoneNumberId && client.phoneNumberId !== requestedPhoneNumberId) return false
-    return true
+  const candidates = resolveMetaHandoffCandidates({
+    requestedWabaId,
+    requestedPhoneNumberId,
   })
 
   if (!candidates.length) {
@@ -142,7 +133,7 @@ async function resolveClientAsset(input: {
   }
 
   const accessible: Array<{
-    client: (typeof CLIENT_HANDOFFS)[number]
+    client: (typeof candidates)[number]
     phone: PhoneNumber
   }> = []
 
@@ -332,7 +323,9 @@ export async function POST(request: Request) {
 
     const handoff = await handoffCredential({
       url: resolved.client.handoffUrl,
-      appSecret: config.appSecret,
+      appSecret: resolved.client.wabaId === ICHTHUS_ASSET.wabaId
+        ? (process.env.ICHTHUS_HANDOFF_SIGNING_SECRET || "")
+        : config.appSecret,
       payload: {
         wabaId: resolved.client.wabaId,
         phoneNumberId: resolved.client.phoneNumberId,
