@@ -1,0 +1,32 @@
+name: Meta Provider admin
+on:
+  pull_request:
+    paths:
+      - 'app/meta/admin/**'
+      - 'app/api/meta/admin/**'
+      - 'lib/meta-admin/**'
+      - 'tests/meta-admin*'
+      - 'tsconfig.meta-admin.json'
+      - 'package*.json'
+      - 'next.config.mjs'
+      - '.github/workflows/meta-admin.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node --test tests/meta-admin*.test.mjs
+      - run: npx tsc -p tsconfig.meta-admin.json --noEmit
+      - run: npm run build
+      - run: node tests/meta-admin-http.mjs

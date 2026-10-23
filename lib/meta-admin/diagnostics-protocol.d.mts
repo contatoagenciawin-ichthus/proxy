@@ -1,0 +1,14 @@
+export type Binding = { client: 'la-climatizacao' | 'eduardo-brasil'; organizationId: string | null; connectionId: string; wabaId: string; phoneNumberId: string };
+export type ProductConfig = { binding: Binding; secret: string };
+export type Snapshot = { version: 1; client: Binding['client']; connection: Omit<Binding, 'client'>; observedAt: string; source: 'product-database'; credential: { state: 'missing' | 'recorded' | 'expired' | 'invalid_scope'; expiresAt: string | null }; webhook: { lastReceivedAt: string | null; lastProcessedAt: string | null; failures24h: number; failuresCapped: boolean; coverage: 'connection-events' | 'first-entry-metadata' }; meta: { checked: false }; coexistence: 'undetermined' };
+export const PATH: string;
+export const CLIENTS: string[];
+export const RESPONSE_HEADERS: Record<string, string>;
+export function iso(value: unknown): string | null;
+export function validBinding(b: unknown): boolean;
+export function productConfig(client: Binding['client'], env?: NodeJS.ProcessEnv): ProductConfig | null;
+export function signedHeaders(binding: Binding, secret: string, now?: number, nonce?: string): Record<string, string>;
+export function authorizedRequest(request: Request, config: ProductConfig | null, now?: number): boolean;
+export function makeSnapshot(binding: Binding, data: Pick<Snapshot, 'credential' | 'webhook'>, now?: number): Snapshot;
+export function parseSnapshot(raw: unknown, binding: Binding, now?: number): Snapshot | null;
+export function handleDiagnosticRequest(request: Request, config: ProductConfig | null, collect: (binding: Binding) => Promise<Snapshot>): Promise<Response>;
