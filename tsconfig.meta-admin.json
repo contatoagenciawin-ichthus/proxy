@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": ["next-env.d.ts", "lib/meta-admin/**/*.ts", "lib/meta-admin/**/*.mts", "app/meta/admin/**/*.tsx", "app/meta/admin/**/*.ts", "app/api/meta/admin/**/*.ts"],
+  "exclude": ["node_modules"]
+}
