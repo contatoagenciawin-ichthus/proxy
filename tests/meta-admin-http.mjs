@@ -38,6 +38,11 @@ await run('true', async () => {
   assert.match(r.headers.get('cache-control'),/no-store/);
   assert.equal(r.headers.get('x-frame-options'),'DENY');
   const detail=await fetch(base+'/meta/admin/connections/ichthus',{headers:{cookie:good}});assert.equal(detail.status,200);assert.ok((await detail.text()).includes('107697061976892'));
+  for (const client of ['eduardo-brasil', 'la-climatizacao']) {
+    const page = await fetch(base+'/meta/admin/connections/'+client, {headers:{cookie:good}});
+    assert.equal(page.status,200); const body=await page.text();
+    assert.ok(body.includes('Monitoramento do produto'));assert.ok(body.includes('Coleta desabilitada'));assert.ok(!body.includes('Diagnóstico local consultado'));
+  }
   assert.equal((await fetch(base+'/meta/admin/connections/not-a-client',{headers:{cookie:good}})).status,404);
   for(const cookie of [await sessionCookie('999'), good+'tampered', 'better-auth.session_token=tenant-admin']) {
     assert.equal((await fetch(base+'/meta/admin',{headers:{cookie},redirect:'manual'})).status,307);

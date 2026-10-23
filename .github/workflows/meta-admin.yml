@@ -26,7 +26,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
-      - run: node --test tests/meta-admin.test.mjs
+      - run: node --test tests/meta-admin*.test.mjs
       - run: npx tsc -p tsconfig.meta-admin.json --noEmit
       - run: npm run build
       - run: node tests/meta-admin-http.mjs
