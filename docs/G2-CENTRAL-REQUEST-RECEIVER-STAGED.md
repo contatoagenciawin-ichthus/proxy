@@ -27,3 +27,12 @@ Meta-admin workflow runs on draft PR and tests `tests/meta-admin*.test.mjs`, typ
 - GitHub Actions inclui PostgreSQL 17 descartável, fixtures de organizações A/B, rejeição de escrita cruzada, idempotência e proibição de UPDATE pelo receptor. Workflow inicial com essa suíte: **success** (run 40242324328, commit 0bf896ada0e2daa78ef7fd223f21da00d2c202fb).
 - Receiver HTTP foi endurecido para limitar bytes durante o streaming, mesmo sem Content-Length; nova revisão ainda exige check final.
 - **Ainda não há banco central provisionado ou ligado à rota**. A rota segue retornando 503 sem `store`; nenhum pedido foi entregue de verdade à Proxy. As próximas tarefas são provisionamento aprovado de pool/login restrito, integração da instância transacional, confirmação sob sessão de teste e painel administrativo de pedidos.
+
+
+## 25/10 — Restricted runtime and HTTP-to-storage tests
+- `lib/meta-admin/connection-receiver-runtime.mjs`: binds an **injected** dedicated PostgreSQL pool to the receipt repository. It validates `is_superuser=off`, `rolbypassrls=false` and membership of `proxy_connection_receiver`; begins/commits or rolls back the transaction and releases the connection.
+- `tests/meta-admin-connection-receiver-runtime.test.mjs`: validates minimum role and rollback behavior. Run 40242881270 was successful at commit `b8f61cb`.
+- `tests/meta-admin-connection-request-chain.test.mjs`: synthetic HTTP -> HMAC -> restricted transaction -> idempotent receipt test, including denial of cross-tenant requests. This is an in-memory pool fixture, **not** a full real HTTP + Postgres integration.
+- Real PostgreSQL 17 tests of the schema and RLS already passed in run 40242324328.
+- **Unresolved:** runtime route intentionally provides no real `pool`/store, and no PostgreSQL client dependency or central database login has been provisioned. A dedicated driver, secure connection string, tested permissions and approved preview enablement are required before the endpoint may become operational.
+- Operations to avoid without explicit approval: Neon project/branch changes, DB login provisioning, Vercel environment variables, deployment to production, `main` merge, Meta token/WhatsApp changes.
