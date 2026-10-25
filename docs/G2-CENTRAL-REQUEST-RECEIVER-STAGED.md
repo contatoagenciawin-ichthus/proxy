@@ -36,3 +36,11 @@ Meta-admin workflow runs on draft PR and tests `tests/meta-admin*.test.mjs`, typ
 - Real PostgreSQL 17 tests of the schema and RLS already passed in run 40242324328.
 - **Unresolved:** runtime route intentionally provides no real `pool`/store, and no PostgreSQL client dependency or central database login has been provisioned. A dedicated driver, secure connection string, tested permissions and approved preview enablement are required before the endpoint may become operational.
 - Operations to avoid without explicit approval: Neon project/branch changes, DB login provisioning, Vercel environment variables, deployment to production, `main` merge, Meta token/WhatsApp changes.
+
+
+## Provider central SQL adapter and read-only inbox
+- Added `pg` runtime dependency and dedicated, bounded pool in `lib/meta-admin/connection-receiver-pool.mjs`, with TLS certificate verification and no Meta vault access. Pool initializes **only when** `PROXY_CONNECTION_REQUEST_RECEIVER_ENABLED=true` and `PROXY_CONNECTION_REQUEST_DATABASE_URL` is populated. Neither condition has been configured on real infrastructure.
+- The HTTP route now injects the restricted receipt store. Errors fail closed to HTTP 503 with no SQL details.
+- Admin-only `/meta/admin` page displays a separate **Solicitações de integração recebidas** section: `disabled` vs `unavailable` vs true empty list vs actual persisted records. Static WABA inventory remains separate.
+- Admin request listing iterates only server allowlisted organization UUIDs, each within a transaction using `SET LOCAL app.organization_id` and the same non-BYPASSRLS receiver role. It never accepts organization selectors from the browser.
+- Additional typecheck, server-rendered admin verification, operational database credentials and end-to-end authenticated preview are required before turning the flag on. No production deployment, migration, real sender, or central Meta action is performed.
