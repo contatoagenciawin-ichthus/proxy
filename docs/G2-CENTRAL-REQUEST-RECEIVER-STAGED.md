@@ -44,3 +44,16 @@ Meta-admin workflow runs on draft PR and tests `tests/meta-admin*.test.mjs`, typ
 - Admin-only `/meta/admin` page displays a separate **Solicitações de integração recebidas** section: `disabled` vs `unavailable` vs true empty list vs actual persisted records. Static WABA inventory remains separate.
 - Admin request listing iterates only server allowlisted organization UUIDs, each within a transaction using `SET LOCAL app.organization_id` and the same non-BYPASSRLS receiver role. It never accepts organization selectors from the browser.
 - Additional typecheck, server-rendered admin verification, operational database credentials and end-to-end authenticated preview are required before turning the flag on. No production deployment, migration, real sender, or central Meta action is performed.
+
+## Homologação autorizada — Neon/Vercel (25/10/2026)
+
+- Criado **novo projeto Neon isolado** `proxy-g2-homologacao-isolada-20261025` (`falling-mouse-74404571`), PostgreSQL 17, sa-east-1, branch `br-calm-recipe-b6aujxli`, database `proxy_g2_homolog`. Não é o banco operacional do CRM nem dos conectores Meta.
+- Esquema `proxy_control.connection_requests` aplicado somente neste projeto, com **FORCE RLS**. As credenciais ou WABAs operacionais não foram alteradas.
+- **Incidente de role gerada pela API Neon:** `proxy_connection_receiver` retornou `rolcanlogin=true`, `rolcreaterole=true` e `rolbypassrls=true` apesar de solicitada como NOLOGIN. Tentativa de `ALTER ROLE ... NOLOGIN NOBYPASSRLS` foi negada pela plataforma; privilégios dessa role em `proxy_control` foram revogados. **Essa role não deve ser usada pela aplicação**.
+- Criada diretamente por SQL a role `proxy_connection_receiver_restricted` com `NOLOGIN NOBYPASSRLS NOCREATEROLE`; verificado com `pg_roles`. O contrato da aplicação e a migration staged passaram a exigir essa role.
+- Testes efetivos dentro do Neon: role restrita visualiza registro do tenant fictício A, repetição não insere duplicata, tenant fictício B vê zero registros; tentativa de escrita de A com contexto B foi rejeitada pela política RLS.
+- Corrigida divergência Vercel: o build selecionava `pnpm-lock.yaml` desatualizado; a branch passou a usar `package-lock.json` e npm, como o workflow CI. Foi confirmado preview Vercel READY e GitHub CI success no commit `3bf67c2`.
+- **Bloqueio atual:** a criação automática de uma senha/login seguro foi impedida por proteções do ambiente. Nenhum segredo foi exposto, criado na Vercel ou inserido no chat. Sem login restrito e conexão de banco, o endpoint segue fechado (`503`).
+- Próximo passo controlado no Neon Console: criar login `proxy_connection_receiver_login` com `LOGIN NOBYPASSRLS NOCREATEROLE`, senha aleatória longa e permissão de herdar somente `proxy_connection_receiver_restricted`; verificar `pg_roles` antes de qualquer Vercel env.
+- Configurar **somente preview específico da branch** `feat/g2-central-connection-request-receiver` na Vercel com `PROXY_CONNECTION_REQUEST_DATABASE_URL`, segredo HMAC próprio e allowlist de organização fictícia. Nunca reutilizar URL/segredo owner, CRM ou Meta; jamais habilitar flags em produção.
+- O processo de envio automático do CRM continua desativado; homologar com payload assinado de tenant fictício antes de qualquer cliente.
