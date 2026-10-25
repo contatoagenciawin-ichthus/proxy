@@ -20,3 +20,10 @@ Existing `/meta/admin` remains GitHub-authenticated and read-only. Central inges
 
 ## CI
 Meta-admin workflow runs on draft PR and tests `tests/meta-admin*.test.mjs`, typechecks, builds and runs smoke suite. Status must be checked at final commit before approval.
+
+## Adendo de validação — 25/10
+- Banco SQL central preparado com RLS FORCED e `proxy_connection_receiver` NOLOGIN, NOBYPASSRLS, privilégios somente SELECT/INSERT na tabela de recibos.
+- `connection-receipt-store.mjs` agora configura `app.organization_id` local à transação após verificar a assinatura e a allowlist da origem.
+- GitHub Actions inclui PostgreSQL 17 descartável, fixtures de organizações A/B, rejeição de escrita cruzada, idempotência e proibição de UPDATE pelo receptor. Workflow inicial com essa suíte: **success** (run 40242324328, commit 0bf896ada0e2daa78ef7fd223f21da00d2c202fb).
+- Receiver HTTP foi endurecido para limitar bytes durante o streaming, mesmo sem Content-Length; nova revisão ainda exige check final.
+- **Ainda não há banco central provisionado ou ligado à rota**. A rota segue retornando 503 sem `store`; nenhum pedido foi entregue de verdade à Proxy. As próximas tarefas são provisionamento aprovado de pool/login restrito, integração da instância transacional, confirmação sob sessão de teste e painel administrativo de pedidos.
