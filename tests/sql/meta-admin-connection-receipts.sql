@@ -2,7 +2,7 @@
 BEGIN;
 -- Validate least-privilege SQL semantics using the same NOLOGIN role inherited
 -- by a future dedicated connection. Fixtures are synthetic and rolled back.
-SET ROLE proxy_connection_receiver;
+SET ROLE proxy_connection_receiver_restricted;
 SELECT set_config('app.organization_id','11111111-1111-4111-8111-111111111111',true);
 INSERT INTO proxy_control.connection_requests(product,organization_id,protocol_id,channel,version)
  VALUES('proxy-relationship','11111111-1111-4111-8111-111111111111','33333333-3333-4333-8333-333333333333','whatsapp',1)
