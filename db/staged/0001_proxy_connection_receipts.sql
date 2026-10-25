@@ -28,8 +28,8 @@ alter table proxy_control.connection_requests force row level security;
 create policy connection_receipts_tenant on proxy_control.connection_requests
  using (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
  with check (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
-create role proxy_connection_receiver nologin nobypassrls;
-grant usage on schema proxy_control to proxy_connection_receiver;
-grant select, insert on proxy_control.connection_requests to proxy_connection_receiver;
+create role proxy_connection_receiver_restricted nologin nobypassrls;
+grant usage on schema proxy_control to proxy_connection_receiver_restricted;
+grant select, insert on proxy_control.connection_requests to proxy_connection_receiver_restricted;
 -- Dedicated login inherits this NOLOGIN role after separate controlled provisioning.
 -- The role has no rights on Meta assets, tokens, conversations or providers.
