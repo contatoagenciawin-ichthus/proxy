@@ -7,10 +7,11 @@ The CRM request is created under the CRM's authorized owner/admin session with o
 
 ## Important blockers
 - No central Postgres database connection or scoped service login has yet been provisioned.
-- This module uses an injected `saveReceipt` contract; the actual adapter and HTTPS endpoint are **not** wired.
+- A fail-closed HTTPS endpoint now exists at `/api/meta/admin/connection-requests`, with size limit, HMAC, timestamp and allowlist checks; it returns **503** unless a dedicated central database adapter is provisioned. The route intentionally passes no store today.
+- The SQL transaction adapter is injectable and unit-tested, but **no live database connection, migration or worker is deployed**.
 - The new SQL is staged only; no schema changes have been applied.
 - Signature freshness alone cannot prevent replay. The receipt store **must** atomically enforce unique `(product,organization_id,protocol_id)`, return the existing receipt on duplicates, and never acknowledge before commit.
-- Implement receiver API with request size limit, timestamp/hex header parsing, IP-independent authentication, explicit feature flag, server-only secret and request allowlist; use a receiver-specific role without access to Meta credentials.
+- Bind the HTTP route to a real durable store through a receiver-specific non-BYPASSRLS role after disposable database tests. The existing handler is disabled by default and does not accept requests operationally.
 - Implement CRM outbox leasing/retry with acknowledgement/ETag consistency, and tests for unavailable Proxy, duplicate deliveries, two tenants, rollback and server authorization.
 - Only after Postgres disposable integration tests, preview CI, and operator acceptance, enable receiver/worker on test infrastructure. Production requires a separate decision.
 
