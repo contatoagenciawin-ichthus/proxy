@@ -20,3 +20,16 @@ create index on proxy_control.connection_requests(status,received_at);
 -- database tests and an explicit approval of the deployment.
 revoke all on schema proxy_control from public;
 revoke all on proxy_control.connection_requests from public;
+
+-- Defense in depth: service must SET LOCAL app.organization_id in a transaction.
+-- Neither the request body nor an admin browser can choose the DB session scope.
+alter table proxy_control.connection_requests enable row level security;
+alter table proxy_control.connection_requests force row level security;
+create policy connection_receipts_tenant on proxy_control.connection_requests
+ using (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ with check (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+create role proxy_connection_receiver nologin nobypassrls;
+grant usage on schema proxy_control to proxy_connection_receiver;
+grant select, insert on proxy_control.connection_requests to proxy_connection_receiver;
+-- Dedicated login inherits this NOLOGIN role after separate controlled provisioning.
+-- The role has no rights on Meta assets, tokens, conversations or providers.
