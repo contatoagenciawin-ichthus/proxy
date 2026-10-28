@@ -142,7 +142,7 @@ export default function AdsReadLoginReviewPage() {
       }
     } else if (target) {
       setStatus(
-        `Target account ${target} detected. Ready for a fresh ads_read authorization.`,
+        `Target account ${target} detected. Ready for a fresh Autorização Meta.`,
       )
     }
 
@@ -251,9 +251,9 @@ export default function AdsReadLoginReviewPage() {
           setStatus(
             exchange.requestedAccountProbe?.requested
               ? exchange.requestedAccountProbe.accessible
-                ? `ads_read authorization succeeded. Requested account ${exchange.requestedAccountProbe.requested} was also resolved directly and added to the report.`
-                : `ads_read authorization succeeded, but requested account ${exchange.requestedAccountProbe.requested} could not be resolved directly: ${exchange.requestedAccountProbe.error || "unknown error"}`
-              : "ads_read authorization succeeded and read-only advertising insights were retrieved.",
+                ? `Autorização Meta succeeded. Requested account ${exchange.requestedAccountProbe.requested} was also resolved directly and added to the report.`
+                : `Autorização Meta succeeded, but requested account ${exchange.requestedAccountProbe.requested} could not be resolved directly: ${exchange.requestedAccountProbe.error || "unknown error"}`
+              : "Autorização Meta succeeded and read-only advertising insights were retrieved.",
           )
         } else {
           setStatus(
@@ -394,7 +394,7 @@ export default function AdsReadLoginReviewPage() {
     setSession({})
     setStatus(
       targetAccountId
-        ? `Target account ${targetAccountId} detected. Ready for a fresh ads_read authorization.`
+        ? `Target account ${targetAccountId} detected. Ready for a fresh Autorização Meta.`
         : "Ready to start Meta authorization for ads_read.",
     )
   }
@@ -409,17 +409,17 @@ export default function AdsReadLoginReviewPage() {
   )
 
   return (
-    <main className="min-h-screen bg-slate-950 px-5 py-10 text-slate-100 md:px-8 md:py-14">
-      <div className="mx-auto max-w-4xl space-y-6">
-        <header className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 md:p-9">
+    <main className="pa-main pa-ads-review">
+      <div>
+        <header className="border border-white/10 bg-transparent p-7 md:p-9">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
-            Proxy Technology · Meta App Review
+            META ADS · MARKETING API
           </p>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-            ads_read authorization
+            Autorização Meta
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
-            This dedicated review flow requests only{" "}
+            Este fluxo solicita somente{" "}
             <code className="text-cyan-200">ads_read</code>, exchanges the
             authorization code on the server, validates the granted scope, and
             retrieves read-only advertising performance data from accounts the
@@ -427,7 +427,7 @@ export default function AdsReadLoginReviewPage() {
           </p>
 
           {targetAccountId ? (
-            <div className="mt-6 rounded-2xl border border-emerald-300/30 bg-emerald-300/[0.08] p-5 text-sm leading-6 text-emerald-50">
+            <div className="mt-6 border border-emerald-300/30 bg-emerald-300/[0.08] p-5 text-sm leading-6 text-emerald-50">
               <p className="font-semibold">Targeted ad account test</p>
               <p className="mt-2">
                 This authorization will directly test{" "}
@@ -437,8 +437,8 @@ export default function AdsReadLoginReviewPage() {
             </div>
           ) : null}
 
-          <div className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.07] p-5 text-sm leading-6 text-cyan-50">
-            <p className="font-semibold">Read-only review behavior</p>
+          <div className="mt-6 border border-cyan-300/20 bg-cyan-300/[0.07] p-5 text-sm leading-6 text-cyan-50">
+            <p className="font-semibold">Comportamento somente leitura</p>
             <p className="mt-2 text-cyan-100/85">
               Proxy does not create, edit, pause, delete, or otherwise manage
               campaigns in this flow. The access token is used only on the
@@ -448,12 +448,12 @@ export default function AdsReadLoginReviewPage() {
           </div>
         </header>
 
-        <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-6 md:p-7">
+        <section className="border border-white/10 bg-transparent p-6 md:p-7">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            Step 1
+            AUTORIZAÇÃO
           </p>
           <h2 className="mt-2 text-xl font-semibold text-white">
-            Authorize ads_read in Meta
+            Autorizar acesso aos dados de anúncios
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
             Continue with a Meta account that has access to at least one
@@ -466,30 +466,30 @@ export default function AdsReadLoginReviewPage() {
               type="button"
               onClick={startAuthorization}
               disabled={exchanging}
-              className="min-h-12 rounded-xl bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+              className="min-h-12 bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {exchanging
-                ? "Retrieving advertising insights..."
-                : "Start ads_read authorization"}
+                ? "Carregando dados de anúncios..."
+                : "Start Autorização Meta"}
             </button>
             <button
               type="button"
               onClick={restart}
               disabled={exchanging}
-              className="min-h-12 rounded-xl border border-white/15 px-5 font-semibold text-white transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+              className="min-h-12 border border-white/15 px-5 font-semibold text-white transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Restart authorization
+              Reiniciar autorização
             </button>
           </div>
 
-          <div className="mt-6 rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-slate-300">
+          <div className="mt-6 border border-white/10 bg-transparent p-4 text-sm text-slate-300">
             <strong className="text-white">Status:</strong> {status}
           </div>
         </section>
 
         {session.metaLoginCompleted ? (
           <section
-            className={`rounded-2xl border p-6 md:p-7 ${
+            className={`border p-6 md:p-7 ${
               completed
                 ? "border-emerald-300/20 bg-emerald-300/[0.06]"
                 : "border-amber-300/20 bg-amber-300/[0.06]"
@@ -513,9 +513,9 @@ export default function AdsReadLoginReviewPage() {
             {completed ? (
               <>
                 <div className="mt-5 grid gap-3 md:grid-cols-2">
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                  <div className="border border-white/10 bg-transparent p-4">
                     <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
-                      Accessible ad accounts
+                      Contas de anúncios acessíveis
                     </p>
                     <p className="mt-2 text-3xl font-semibold text-white">
                       {session.adAccounts?.length || 0}
@@ -524,12 +524,12 @@ export default function AdsReadLoginReviewPage() {
                       ads_read granted and validated server-side
                     </p>
                   </div>
-                  <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+                  <div className="border border-white/10 bg-transparent p-4">
                     <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
-                      Reporting period
+                      Período do relatório
                     </p>
                     <p className="mt-2 text-lg font-semibold text-white">
-                      Last 30 days
+                      Últimos 30 dias
                     </p>
                     <p className="mt-2 text-xs text-slate-400">
                       Account summaries plus campaign-level insights for the
@@ -540,13 +540,13 @@ export default function AdsReadLoginReviewPage() {
 
                 <a
                   href="/meta/review/ads-read"
-                  className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl bg-emerald-200 px-5 font-semibold text-slate-950 transition hover:bg-emerald-100"
+                  className="mt-6 inline-flex min-h-12 items-center justify-center bg-emerald-200 px-5 font-semibold text-slate-950 transition hover:bg-emerald-100"
                 >
-                  Continue to advertising report
+                  Continuar para os relatórios
                 </a>
               </>
             ) : (
-              <div className="mt-5 rounded-xl border border-amber-300/20 bg-black/20 p-4 text-sm leading-6 text-amber-100">
+              <div className="mt-5 border border-amber-300/20 bg-transparent p-4 text-sm leading-6 text-amber-100">
                 {session.exchangeError ||
                   "The Meta login succeeded, but Proxy has not yet produced the required read-only advertising evidence. Do not record the final App Review screencast in this state."}
               </div>
