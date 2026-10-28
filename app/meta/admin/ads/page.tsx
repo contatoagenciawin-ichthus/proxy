@@ -12,7 +12,7 @@ export default async function TrafficReportsAdminPage() {
       <p className="pa-nav-label">PLATAFORMA META</p>
       <nav aria-label="Administração">
         <Link href="/meta/admin">Conexões <span>03</span></Link>
-        <Link className="pa-nav-active" href="/meta/admin/ads">Relatórios de tráfego <span>↗</span></Link>
+        <Link className="pa-nav-active" href="/meta/admin/ads">Relatórios de tráfego <span>↗</span></Link><Link href="/meta/admin/ads/accounts">Contas de anúncios <span>↗</span></Link>
       </nav>
       <div className="pa-sidebar-bottom">Acesso da plataforma<br/><strong>Consulta administrativa</strong></div>
     </aside>
@@ -32,6 +32,11 @@ export default async function TrafficReportsAdminPage() {
           </div>
           <span className="pa-mode">SOMENTE LEITURA</span>
         </div>
+
+        <section className="pa-quick-access">
+          <div><p className="pa-eyebrow">OPERAÇÃO</p><h2>Contas de anúncios</h2><p>Consulte as contas autorizadas, pesquise por cliente e abra o relatório individual sem passar pelo fluxo técnico de review.</p></div>
+          <Link className="pa-button pa-button-link" href="/meta/admin/ads/accounts">Abrir contas de anúncios <span aria-hidden="true">↗</span></Link>
+        </section>
 
         <section className="pa-report-grid">
           <article className="pa-report-card">
