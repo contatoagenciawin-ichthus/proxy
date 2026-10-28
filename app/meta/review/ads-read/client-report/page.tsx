@@ -222,22 +222,32 @@ export default function MetaClientReportPage() {
 
   if (!session) {
     return (
-      <main className="min-h-screen bg-[#f3f1ec] px-5 py-10 text-[#17343c]">
-        <div className="mx-auto max-w-3xl rounded-3xl border border-black/10 bg-white p-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#5a777e]">
-            Proxy Technology · Meta Ads
+      <main className="pa-main pa-report-state">
+        <div className="pa-heading">
+          <div>
+            <p className="pa-eyebrow">META ADS · RELATÓRIO</p>
+            <h1>Relatório de tráfego</h1>
+            <p className="pa-lead">
+              Este relatório depende da sessão Meta autorizada na aba em que os dados foram carregados.
+            </p>
+          </div>
+          <span className="pa-mode">SESSÃO AUSENTE</span>
+        </div>
+
+        <section className="pa-note">
+          <h2>Os dados da Meta não estão disponíveis nesta aba</h2>
+          <p>
+            Abra o relatório a partir de Contas de anúncios na mesma sessão do navegador
+            ou atualize a autorização Meta antes de tentar novamente.
           </p>
-          <h1 className="mt-3 text-3xl font-semibold">Relatório de tráfego</h1>
-          <p className="mt-4 leading-7 text-[#5f7075]">
-            Não encontrei a sessão autorizada da Meta neste navegador. Volte
-            para o fluxo ads_read, conclua a autorização e abra o relatório
-            novamente.
-          </p>
-          <a
-            href="/meta/review/ads-read"
-            className="mt-6 inline-flex rounded-xl bg-[#173f49] px-5 py-3 font-semibold text-white"
-          >
-            Voltar para ads_read
+        </section>
+
+        <div className="pa-report-state-actions">
+          <a className="pa-button pa-button-link" href="/meta/admin/ads/accounts">
+            Voltar às contas <span aria-hidden="true">↗</span>
+          </a>
+          <a className="pa-detail-link" href="/meta/review/ads-read/login">
+            Atualizar autorização Meta ↗
           </a>
         </div>
       </main>
@@ -246,12 +256,28 @@ export default function MetaClientReportPage() {
 
   if (!report?.account?.insights) {
     return (
-      <main className="min-h-screen bg-[#f3f1ec] px-5 py-10 text-[#17343c]">
-        <div className="mx-auto max-w-3xl rounded-3xl border border-black/10 bg-white p-8">
-          <h1 className="text-3xl font-semibold">Relatório de tráfego</h1>
-          <p className="mt-4 text-[#5f7075]">
-            A sessão existe, mas não contém Insights para a conta solicitada.
-          </p>
+      <main className="pa-main pa-report-state">
+        <div className="pa-heading">
+          <div>
+            <p className="pa-eyebrow">META ADS · RELATÓRIO</p>
+            <h1>Relatório de tráfego</h1>
+            <p className="pa-lead">
+              A sessão Meta está disponível, mas a conta solicitada não possui Insights nesta leitura.
+            </p>
+          </div>
+          <span className="pa-mode">SEM INSIGHTS</span>
+        </div>
+        <section className="pa-note">
+          <h2>Conta sem dados disponíveis</h2>
+          <p>Volte à lista de contas para escolher outra conta ou atualize os dados da Meta.</p>
+        </section>
+        <div className="pa-report-state-actions">
+          <a className="pa-button pa-button-link" href="/meta/admin/ads/accounts">
+            Voltar às contas <span aria-hidden="true">↗</span>
+          </a>
+          <a className="pa-detail-link" href="/meta/review/ads-read/login">
+            Atualizar dados da Meta ↗
+          </a>
         </div>
       </main>
     )
