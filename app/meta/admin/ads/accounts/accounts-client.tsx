@@ -132,14 +132,25 @@ export function MetaAdAccountsClient() {
   if (!session?.adAccounts?.length) {
     return (
       <section className="pa-note">
-        <h2>Nenhuma sessão Meta carregada neste navegador</h2>
+        <h2>Nenhum snapshot de anúncios carregado</h2>
         <p>
-          Autorize novamente o acesso ads_read para carregar as contas disponíveis.
-          Depois, volte a esta página.
+          Tente carregar os dados diretamente da Meta usando a credencial segura do
+          backend. Se a credencial ainda não possuir ads_read, o painel informará o erro.
         </p>
-        <a className="pa-button pa-button-link" href="/meta/review/ads-read">
-          Autorizar com a Meta <span aria-hidden="true">↗</span>
-        </a>
+        <div className="pa-report-state-actions">
+          <button
+            type="button"
+            className="pa-button"
+            onClick={refreshMetaData}
+            disabled={refreshing}
+          >
+            {refreshing ? "Consultando a Meta..." : "Carregar dados da Meta"}
+          </button>
+          <a className="pa-detail-link" href="/meta/review/ads-read/login">
+            Autorizar novamente ↗
+          </a>
+        </div>
+        {refreshMessage ? <p className="pa-refresh-status">{refreshMessage}</p> : null}
       </section>
     )
   }
