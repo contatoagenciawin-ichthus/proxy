@@ -5,6 +5,7 @@ import {
   assertReviewAccess,
   getMetaReviewConfig,
 } from "@/lib/meta-review"
+import { persistMetaAdsSession } from "@/lib/meta-ads-session"
 
 const DEFAULT_APP_ID = "1952034255371331"
 
@@ -266,7 +267,32 @@ export async function POST(request: Request) {
       )
     }
 
-    const accessToken = tokenPayload.access_token
+    let accessToken = tokenPayload.access_token
+
+    // Exchange the short-lived user token for a longer-lived token when Meta
+    // supports it. The token remains server-side and is stored only in an
+    // encrypted HTTP-only cookie for the authenticated browser session.
+    try {
+      const longLivedParams = new URLSearchParams({
+        grant_type: "fb_exchange_token",
+        client_id: appId,
+        client_secret: appSecret,
+        fb_exchange_token: accessToken,
+      })
+      const longLivedResponse = await fetch(
+        `https://graph.facebook.com/${config.graphVersion}/oauth/access_token?${longLivedParams.toString()}`,
+        { cache: "no-store" },
+      )
+      const longLivedPayload =
+        (await longLivedResponse.json()) as OAuthTokenResponse
+      if (longLivedResponse.ok && longLivedPayload.access_token) {
+        accessToken = longLivedPayload.access_token
+        tokenPayload.expires_in = longLivedPayload.expires_in || tokenPayload.expires_in
+      }
+    } catch {
+      // A short-lived token is still valid for the immediate review flow.
+    }
+
     const appAccessToken = `${appId}|${appSecret}`
 
     const debugParams = new URLSearchParams({
@@ -297,6 +323,13 @@ export async function POST(request: Request) {
         403,
       )
     }
+
+    await persistMetaAdsSession({
+      accessToken,
+      expiresAt: debugPayload.data?.expires_at || null,
+      scopes: grantedScopes,
+      userId: debugPayload.data?.user_id || null,
+    })
 
     const accountsPayload = await graphRequest<{ data?: AdAccount[] }>(
       config.graphVersion,
