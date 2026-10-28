@@ -69,3 +69,8 @@
   .client-report-print details summary{color:var(--pa-text)!important}
 }
 @media(max-width:700px){.pa-report-state-actions{display:grid}}
+
+@media print{
+  .client-report-print-hint{display:none!important}
+  .client-report-executive{break-inside:avoid-page;page-break-inside:avoid}
+}
