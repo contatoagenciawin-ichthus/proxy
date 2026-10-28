@@ -281,7 +281,7 @@ export default function MetaClientReportPage() {
         : `A frequência média ficou em ${decimal(insights.frequency)}. Isoladamente, o indicador não sugere repetição elevada no período.`
 
   return (
-    <main className="min-h-screen bg-[#f3f1ec] px-4 py-8 text-[#17343c] md:px-8 md:py-12">
+    <main className="client-report-print min-h-screen bg-[#f3f1ec] px-4 py-8 text-[#17343c] md:px-8 md:py-12">
       <div className="mx-auto max-w-6xl space-y-6">
         <header className="rounded-3xl border border-black/10 bg-white p-7 md:p-9">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#4f777f]">
@@ -492,7 +492,7 @@ export default function MetaClientReportPage() {
           </div>
         </section>
 
-        <details className="rounded-3xl border border-black/10 bg-white p-6 md:p-8">
+        <details className="client-report-technical rounded-3xl border border-black/10 bg-white p-6 md:p-8">
           <summary className="cursor-pointer font-semibold">
             Diagnóstico técnico: ações devolvidas pela Meta
           </summary>
