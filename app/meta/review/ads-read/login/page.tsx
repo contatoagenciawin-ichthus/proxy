@@ -538,11 +538,61 @@ export default function AdsReadLoginReviewPage() {
                   </div>
                 </div>
 
+                <div className="mt-7">
+                  <div className="pa-section-title">
+                    <h2>Relatórios individuais</h2>
+                    <span>{session.adAccounts?.length || 0} contas disponíveis</span>
+                  </div>
+                  <div className="pa-table-wrap">
+                    <table>
+                      <caption className="pa-sr">
+                        Contas de anúncios autorizadas e seus relatórios
+                      </caption>
+                      <thead>
+                        <tr>
+                          <th>Conta de anúncios</th>
+                          <th>ID</th>
+                          <th>Dados</th>
+                          <th><span className="pa-sr">Relatório</span></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {session.adAccounts?.map((account) => (
+                          <tr key={account.id}>
+                            <td>
+                              <strong>{account.name || "Conta sem nome"}</strong>
+                              <small>{account.currency || "Moeda não informada"}</small>
+                            </td>
+                            <td><span>{account.id}</span></td>
+                            <td>
+                              <span className={account.insights ? "pa-badge" : "pa-badge pa-badge-pending"}>
+                                {account.insights ? "Insights disponíveis" : "Sem Insights"}
+                              </span>
+                            </td>
+                            <td>
+                              {account.insights ? (
+                                <a
+                                  className="pa-detail-link"
+                                  href={`/meta/review/ads-read/client-report?account_id=${encodeURIComponent(account.id)}`}
+                                >
+                                  Ver relatório <span aria-hidden="true">↗</span>
+                                </a>
+                              ) : (
+                                <span className="pa-muted">Indisponível</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
                 <a
                   href="/meta/review/ads-read"
                   className="mt-6 inline-flex min-h-12 items-center justify-center bg-emerald-200 px-5 font-semibold text-slate-950 transition hover:bg-emerald-100"
                 >
-                  Continuar para os relatórios
+                  Ver análise geral da sessão
                 </a>
               </>
             ) : (
