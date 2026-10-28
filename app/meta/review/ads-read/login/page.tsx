@@ -448,44 +448,76 @@ export default function AdsReadLoginReviewPage() {
           </div>
         </header>
 
-        <section className="border border-white/10 bg-transparent p-6 md:p-7">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            AUTORIZAÇÃO
-          </p>
-          <h2 className="mt-2 text-xl font-semibold text-white">
-            Autorizar acesso aos dados de anúncios
-          </h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
-            Continue with a Meta account that has access to at least one
-            advertising account. Review the requested permission and complete
-            the authorization.
-          </p>
+        {!completed ? (
+          <section className="border border-white/10 bg-transparent p-6 md:p-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              AUTORIZAÇÃO
+            </p>
+            <h2 className="mt-2 text-xl font-semibold text-white">
+              Autorizar acesso aos dados de anúncios
+            </h2>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
+              Continue com uma conta Meta que tenha acesso às contas de anúncios
+              que serão consultadas e conclua a autorização.
+            </p>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={startAuthorization}
-              disabled={exchanging}
-              className="min-h-12 bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              {exchanging
-                ? "Carregando dados de anúncios..."
-                : "Start Autorização Meta"}
-            </button>
-            <button
-              type="button"
-              onClick={restart}
-              disabled={exchanging}
-              className="min-h-12 border border-white/15 px-5 font-semibold text-white transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              Reiniciar autorização
-            </button>
-          </div>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={startAuthorization}
+                disabled={exchanging}
+                className="min-h-12 bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {exchanging
+                  ? "Carregando dados de anúncios..."
+                  : "Autorizar com a Meta"}
+              </button>
+              <button
+                type="button"
+                onClick={restart}
+                disabled={exchanging}
+                className="min-h-12 border border-white/15 px-5 font-semibold text-white transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Reiniciar autorização
+              </button>
+            </div>
 
-          <div className="mt-6 border border-white/10 bg-transparent p-4 text-sm text-slate-300">
-            <strong className="text-white">Status:</strong> {status}
-          </div>
-        </section>
+            <div className="mt-6 border border-white/10 bg-transparent p-4 text-sm text-slate-300">
+              <strong className="text-white">Status:</strong> {status}
+            </div>
+          </section>
+        ) : (
+          <section className="pa-session-valid border border-emerald-300/20 bg-transparent p-5 md:p-6">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
+                  SESSÃO META ATIVA
+                </p>
+                <h2 className="mt-2 text-xl font-semibold text-white">
+                  Autorização concluída
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
+                  A sessão ads_read já foi validada e os dados das contas estão disponíveis abaixo.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="#relatorios-individuais"
+                  className="inline-flex min-h-11 items-center justify-center bg-emerald-200 px-4 font-semibold text-slate-950"
+                >
+                  Ir para os relatórios
+                </a>
+                <button
+                  type="button"
+                  onClick={restart}
+                  className="min-h-11 border border-white/15 px-4 font-semibold text-white transition hover:bg-white/5"
+                >
+                  Trocar autorização
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
 
         {session.metaLoginCompleted ? (
           <section
