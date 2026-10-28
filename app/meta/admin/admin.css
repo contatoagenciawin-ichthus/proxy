@@ -31,3 +31,21 @@
 .pa-account-toolbar input{width:100%;border:1px solid var(--pa-line);background:#0c1218;color:var(--pa-text);padding:11px 12px;font:inherit}
 .pa-metric-id,.pa-metric-date{font-size:15px!important;letter-spacing:0!important;overflow-wrap:anywhere}
 @media(max-width:700px){.pa-account-toolbar{display:grid}.pa-account-toolbar label{min-width:0}.pa-metric-id,.pa-metric-date{font-size:13px!important}}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  html,body{background:#fff!important}
+  .provider-admin{background:#fff!important;color:#17343c!important}
+  .provider-admin .pa-sidebar,.provider-admin .pa-topbar,.client-report-actions,.client-report-technical{display:none!important}
+  .provider-admin .pa-workspace,.provider-admin .pa-flow-content{display:block!important;width:100%!important}
+  .provider-admin .pa-flow-content>main{min-height:auto!important}
+  .client-report-print{background:#fff!important;padding:0!important;color:#17343c!important}
+  .client-report-print>div{max-width:none!important}
+  .client-report-print header,.client-report-print section{break-inside:avoid-page;page-break-inside:avoid}
+  .client-report-print table{width:100%!important;min-width:0!important;font-size:9pt!important}
+  .client-report-print thead{display:table-header-group}
+  .client-report-print tr{break-inside:avoid-page;page-break-inside:avoid}
+  .client-report-print a{color:inherit!important;text-decoration:none!important}
+  .client-report-print [class*="shadow"]{box-shadow:none!important}
+  .client-report-print .overflow-x-auto{overflow:visible!important}
+}
