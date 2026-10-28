@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 
 import { currentPlatformAdmin } from "@/lib/meta-admin/auth"
 import { getMetaReviewConfig, MetaReviewError } from "@/lib/meta-review"
+import { readMetaAdsSession } from "@/lib/meta-ads-session"
 
 type AdAccount = {
   id: string
@@ -158,17 +159,31 @@ export async function POST() {
   }
 
   const config = getMetaReviewConfig()
-  const accessToken = config.accessToken
+  const adsSession = await readMetaAdsSession()
+  const accessToken = adsSession?.accessToken || ""
   const stats: CallStats = { attempted: 0, succeeded: 0, failed: 0 }
 
   if (!accessToken) {
     return NextResponse.json(
       {
         ok: false,
-        error: "META_REVIEW_ACCESS_TOKEN is not configured in production.",
+        error:
+          "Nenhuma autorização ads_read válida está disponível neste navegador. Autorize novamente com a Meta antes de atualizar.",
         stats,
       },
-      { status: 503 },
+      { status: 401 },
+    )
+  }
+
+  if (!adsSession?.scopes?.includes("ads_read")) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error:
+          "A autorização armazenada não inclui ads_read. Autorize novamente com a Meta.",
+        stats,
+      },
+      { status: 403 },
     )
   }
 
