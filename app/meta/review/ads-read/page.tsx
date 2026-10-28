@@ -16,7 +16,7 @@ type Insights = {
   frequency?: string
 }
 
-type CampaignInsights = Insights & {
+type CampanhaInsights = Insights & {
   campaign_id?: string
   campaign_name?: string
   actions?: Array<{ action_type?: string; value?: string }>
@@ -42,9 +42,9 @@ type ReviewSession = {
     insights?: Insights | null
     insightsError?: string | null
   }>
-  campaignInsights?: CampaignInsights[]
+  campaignInsights?: CampanhaInsights[]
   campaignInsightsError?: string | null
-  campaignInsightsByAccount?: Record<string, { data: CampaignInsights[]; error: string | null }>
+  campaignInsightsByAccount?: Record<string, { data: CampanhaInsights[]; error: string | null }>
   exchangeError?: string
 }
 
@@ -54,7 +54,7 @@ function number(value?: string) {
 }
 
 function money(value?: string, currency = "BRL") {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency,
     maximumFractionDigits: 2,
@@ -62,13 +62,13 @@ function money(value?: string, currency = "BRL") {
 }
 
 function integer(value?: string) {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("pt-BR", {
     maximumFractionDigits: 0,
   }).format(number(value))
 }
 
 function decimal(value?: string, digits = 2) {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("pt-BR", {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits,
   }).format(number(value))
@@ -193,12 +193,12 @@ export default function AdsReadReviewPage() {
     session?.adAccounts?.[0] ||
     null
 
-  const selectedCampaignInsights = selectedAccount
+  const selectedCampanhaInsights = selectedAccount
     ? session?.campaignInsightsByAccount?.[selectedAccount.id]?.data ||
       (selectedAccount.id === session?.primaryAccountId ? session?.campaignInsights || [] : [])
     : []
 
-  const selectedCampaignInsightsError = selectedAccount
+  const selectedCampanhaInsightsError = selectedAccount
     ? session?.campaignInsightsByAccount?.[selectedAccount.id]?.error ||
       (selectedAccount.id === session?.primaryAccountId ? session?.campaignInsightsError || null : null)
     : null
@@ -227,11 +227,11 @@ export default function AdsReadReviewPage() {
 
     if (frequency >= 3) {
       observations.push(
-        `Frequency is ${decimal(insights.frequency)}, which is surfaced as a monitoring point for possible audience or creative saturation.`,
+        `Frequência is ${decimal(insights.frequency)}, which is surfaced as a monitoring point for possible audience or creative saturation.`,
       )
     } else if (frequency > 0) {
       observations.push(
-        `Frequency is ${decimal(insights.frequency)}, indicating the average number of impressions per reached person in the period.`,
+        `Frequência is ${decimal(insights.frequency)}, indicating the average number of impressions per reached person in the period.`,
       )
     }
 
@@ -258,17 +258,17 @@ export default function AdsReadReviewPage() {
   )
 
   return (
-    <main className="min-h-screen bg-slate-950 px-5 py-10 text-slate-100 md:px-8 md:py-14">
-      <div className="mx-auto max-w-6xl space-y-7">
-        <header className="rounded-3xl border border-white/10 bg-white/[0.04] p-7 md:p-9">
+    <main className="pa-main pa-ads-review">
+      <div>
+        <header className="pa-heading pa-ads-heading">
           <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-300">
-            Proxy Technology · Meta App Review
+            META ADS · MARKETING API
           </p>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-            ads_read end-to-end review
+            Autorização e dados de tráfego
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
-            This walkthrough demonstrates why Proxy requests{" "}
+            A Proxy utiliza a permissão{" "}
             <code className="text-cyan-200">ads_read</code>: an authorized
             business user grants read access, Proxy retrieves advertising
             insights through the Meta Marketing API, and the application turns
@@ -277,7 +277,7 @@ export default function AdsReadReviewPage() {
           </p>
 
           {targetAccountId ? (
-            <div className="mt-6 rounded-2xl border border-emerald-300/30 bg-emerald-300/[0.08] p-5 text-sm leading-6 text-emerald-50">
+            <div className="mt-6 border border-emerald-300/30 bg-emerald-300/[0.08] p-5 text-sm leading-6 text-emerald-50">
               <p className="font-semibold">Targeted ad account test</p>
               <p className="mt-2">
                 After the review key is validated, this flow will authorize
@@ -287,8 +287,8 @@ export default function AdsReadReviewPage() {
             </div>
           ) : null}
 
-          <div className="mt-6 rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.07] p-5 text-sm leading-6 text-cyan-50">
-            <p className="font-semibold">Review scope</p>
+          <div className="mt-6 border border-cyan-300/20 bg-cyan-300/[0.07] p-5 text-sm leading-6 text-cyan-50">
+            <p className="font-semibold">Escopo da integração</p>
             <p className="mt-2 text-cyan-100/85">
               Read only. This flow does not request ads_management and does not
               create, edit, pause, delete, or otherwise modify advertising
@@ -297,42 +297,42 @@ export default function AdsReadReviewPage() {
             </p>
           </div>
 
-          <div className="mt-7 grid gap-4 rounded-2xl border border-white/10 bg-black/20 p-5 md:grid-cols-[1fr_auto] md:items-end">
+          <div className="mt-7 grid gap-4 border border-white/10 bg-transparent p-5 md:grid-cols-[1fr_auto] md:items-end">
             <label>
               <span className="text-sm font-medium text-slate-300">
-                Review access key
+                Chave de acesso da integração
               </span>
               <input
                 type="password"
                 value={reviewKey}
                 onChange={(event) => storeReviewKey(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-cyan-400/60"
-                placeholder="Enter the review access key"
+                className="mt-2 w-full border border-white/10 bg-slate-900 px-4 py-3 text-white outline-none focus:border-cyan-400/60"
+                placeholder="Informe a chave de acesso"
               />
             </label>
             <button
               type="button"
               onClick={startAuthorization}
               disabled={!reviewKey || checkingKey}
-              className="min-h-12 rounded-xl bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+              className="min-h-12 bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {checkingKey
-                ? "Validating review key..."
+                ? "Validando acesso..."
                 : session?.metaLoginCompleted
-                  ? "Run Meta authorization again"
-                  : "Start ads_read authorization"}
+                  ? "Autorizar novamente com a Meta"
+                  : "Autorizar com a Meta"}
             </button>
           </div>
 
           {keyStatus ? (
-            <div className="mt-4 rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-slate-300">
-              <strong className="text-white">Preflight:</strong> {keyStatus}
+            <div className="mt-4 border border-white/10 bg-transparent px-4 py-3 text-sm text-slate-300">
+              <strong className="text-white">Status:</strong> {keyStatus}
             </div>
           ) : null}
         </header>
 
         <section
-          className={`rounded-2xl border p-6 ${
+          className={`border p-6 ${
             complete
               ? "border-emerald-300/20 bg-emerald-300/[0.06]"
               : "border-amber-300/20 bg-amber-300/[0.06]"
@@ -343,35 +343,35 @@ export default function AdsReadReviewPage() {
               complete ? "text-emerald-300" : "text-amber-300"
             }`}
           >
-            Step 1 · Authorization and API evidence
+            INTEGRAÇÃO
           </p>
           <h2 className="mt-2 text-xl font-semibold text-white">
-            Meta authorization → accessible ad accounts → Insights
+            Verificação da autorização e dos dados
           </h2>
 
           <ul className="mt-5 space-y-3 text-sm leading-6">
             <CheckItem complete={Boolean(session?.metaLoginCompleted)}>
-              Meta authorization completed.
+              Autorização Meta concluída.
             </CheckItem>
             <CheckItem complete={Boolean(session?.serverExchangeCompleted)}>
-              Authorization code exchanged server-side.
+              Código de autorização processado no servidor.
             </CheckItem>
             <CheckItem complete={Boolean(session?.adsReadGranted)}>
-              The issued token includes ads_read.
+              A permissão ads_read foi concedida.
             </CheckItem>
             <CheckItem complete={Boolean(session?.tokenValid)}>
-              Meta debug_token confirms the issued token is valid.
+              O token foi validado pela Meta.
             </CheckItem>
             <CheckItem complete={Boolean(session?.adAccountsRetrieved)}>
-              Accessible advertising accounts were retrieved from /me/adaccounts.
+              As contas de anúncios acessíveis foram recuperadas.
             </CheckItem>
             <CheckItem complete={Boolean(session?.accountInsightsRetrieved)}>
-              Last-30-day account-level Insights were retrieved.
+              Os Insights dos últimos 30 dias foram recuperados.
             </CheckItem>
           </ul>
 
           {session?.exchangeError ? (
-            <div className="mt-5 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
+            <div className="mt-5 border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
               {session.exchangeError}
             </div>
           ) : null}
@@ -379,27 +379,27 @@ export default function AdsReadReviewPage() {
 
         {complete && session?.adAccounts?.length ? (
           <>
-            <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+            <section className="border border-white/10 bg-transparent p-6">
               <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                    Step 2 · Advertising account
+                    CONTA DE ANÚNCIOS
                   </p>
                   <h2 className="mt-2 text-xl font-semibold text-white">
-                    Read-only account performance
+                    Desempenho da conta selecionada
                   </h2>
                 </div>
 
                 <label className="min-w-72">
                   <span className="text-xs uppercase tracking-[0.14em] text-slate-500">
-                    Accessible ad account
+                    Conta disponível
                   </span>
                   <select
                     value={selectedAccount?.id || ""}
                     onChange={(event) =>
                       setSelectedAccountId(event.target.value)
                     }
-                    className="mt-2 w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-white"
+                    className="mt-2 w-full border border-white/10 bg-slate-900 px-4 py-3 text-white"
                   >
                     {session.adAccounts.map((account) => (
                       <option key={account.id} value={account.id}>
@@ -413,22 +413,22 @@ export default function AdsReadReviewPage() {
               {selectedAccount?.insights ? (
                 <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <Metric
-                    label="Spend"
+                    label="Investimento"
                     value={money(
                       selectedAccount.insights.spend,
                       selectedAccount.currency || "BRL",
                     )}
                   />
                   <Metric
-                    label="Reach"
+                    label="Alcance"
                     value={integer(selectedAccount.insights.reach)}
                   />
                   <Metric
-                    label="Impressions"
+                    label="Impressões"
                     value={integer(selectedAccount.insights.impressions)}
                   />
                   <Metric
-                    label="Clicks"
+                    label="Cliques"
                     value={integer(selectedAccount.insights.clicks)}
                   />
                   <Metric
@@ -450,24 +450,24 @@ export default function AdsReadReviewPage() {
                     )}
                   />
                   <Metric
-                    label="Frequency"
+                    label="Frequência"
                     value={decimal(selectedAccount.insights.frequency)}
                   />
                 </div>
               ) : (
-                <p className="mt-6 rounded-xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm text-amber-100">
+                <p className="mt-6 border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm text-amber-100">
                   {selectedAccount?.insightsError ||
                     "No account-level Insights were returned for this account."}
                 </p>
               )}
             </section>
 
-            <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+            <section className="border border-white/10 bg-transparent p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Step 3 · Proxy reporting layer
+                LEITURA DA PROXY
               </p>
               <h2 className="mt-2 text-xl font-semibold text-white">
-                Performance analysis generated from Meta Insights
+                Análise gerada a partir dos Insights da Meta
               </h2>
 
               {report ? (
@@ -475,7 +475,7 @@ export default function AdsReadReviewPage() {
                   {report.map((item) => (
                     <li
                       key={item}
-                      className="rounded-xl border border-white/10 bg-black/20 p-4"
+                      className="border border-white/10 bg-transparent p-4"
                     >
                       {item}
                     </li>
@@ -489,31 +489,31 @@ export default function AdsReadReviewPage() {
               )}
             </section>
 
-            <section className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+            <section className="border border-white/10 bg-transparent p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Step 4 · Campaign detail
+                CAMPANHAS
               </p>
               <h2 className="mt-2 text-xl font-semibold text-white">
-                Campaign-level Insights for the selected account
+                Desempenho por campanha
               </h2>
 
-              {selectedCampaignInsights.length ? (
+              {selectedCampanhaInsights.length ? (
                 <div className="mt-5 overflow-x-auto">
                   <table className="w-full min-w-[840px] text-left text-sm">
                     <thead className="text-xs uppercase tracking-[0.12em] text-slate-500">
                       <tr className="border-b border-white/10">
-                        <th className="px-3 py-3">Campaign</th>
-                        <th className="px-3 py-3">Spend</th>
-                        <th className="px-3 py-3">Reach</th>
-                        <th className="px-3 py-3">Impressions</th>
-                        <th className="px-3 py-3">Clicks</th>
+                        <th className="px-3 py-3">Campanha</th>
+                        <th className="px-3 py-3">Investimento</th>
+                        <th className="px-3 py-3">Alcance</th>
+                        <th className="px-3 py-3">Impressões</th>
+                        <th className="px-3 py-3">Cliques</th>
                         <th className="px-3 py-3">CTR</th>
                         <th className="px-3 py-3">CPC</th>
-                        <th className="px-3 py-3">Frequency</th>
+                        <th className="px-3 py-3">Frequência</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {selectedCampaignInsights.map((campaign, index) => (
+                      {selectedCampanhaInsights.map((campaign, index) => (
                         <tr
                           key={campaign.campaign_id || `campaign-${index}`}
                           className="border-b border-white/5 text-slate-300"
@@ -521,7 +521,7 @@ export default function AdsReadReviewPage() {
                           <td className="px-3 py-4 font-medium text-white">
                             {campaign.campaign_name ||
                               campaign.campaign_id ||
-                              "Campaign"}
+                              "Campanha"}
                           </td>
                           <td className="px-3 py-4">
                             {money(
@@ -556,16 +556,16 @@ export default function AdsReadReviewPage() {
                   </table>
                 </div>
               ) : (
-                <p className="mt-5 rounded-xl border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm text-amber-100">
-                  {selectedCampaignInsightsError ||
+                <p className="mt-5 border border-amber-300/20 bg-amber-300/[0.06] p-4 text-sm text-amber-100">
+                  {selectedCampanhaInsightsError ||
                     "No campaign-level rows were returned for the selected account. Account-level reporting above still demonstrates ads_read successfully."}
                 </p>
               )}
             </section>
 
-            <section className="rounded-2xl border border-cyan-300/20 bg-cyan-300/[0.06] p-6">
+            <section className="border border-cyan-300/20 bg-cyan-300/[0.06] p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-300">
-                Relatório para cliente
+                RELATÓRIO PARA CLIENTE
               </p>
               <h2 className="mt-2 text-xl font-semibold text-white">
                 {selectedAccount?.name || "Conta selecionada"} · relatório em português
@@ -576,19 +576,19 @@ export default function AdsReadReviewPage() {
               {selectedAccount ? (
                 <a
                   href={`/meta/review/ads-read/client-report?account_id=${encodeURIComponent(selectedAccount.id)}`}
-                  className="mt-5 inline-flex min-h-11 items-center justify-center rounded-xl bg-cyan-200 px-4 font-semibold text-slate-950 transition hover:bg-cyan-100"
+                  className="mt-5 inline-flex min-h-11 items-center justify-center bg-cyan-200 px-4 font-semibold text-slate-950 transition hover:bg-cyan-100"
                 >
                   Abrir relatório {selectedAccount.name || selectedAccount.id}
                 </a>
               ) : null}
             </section>
 
-            <section className="rounded-2xl border border-emerald-300/20 bg-emerald-300/[0.06] p-6">
+            <section className="border border-emerald-300/20 bg-emerald-300/[0.06] p-6">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
-                End-to-end review status
+                STATUS DA INTEGRAÇÃO
               </p>
               <h2 className="mt-2 text-xl font-semibold text-white">
-                Complete ads_read use case demonstrated
+                Fluxo ads_read concluído
               </h2>
               <p className="mt-3 max-w-3xl text-sm leading-6 text-emerald-50">
                 Proxy received explicit Meta authorization, validated ads_read,
@@ -600,9 +600,9 @@ export default function AdsReadReviewPage() {
               <button
                 type="button"
                 onClick={restartReview}
-                className="mt-6 min-h-11 rounded-xl border border-white/15 px-4 font-semibold text-white transition hover:bg-white/5"
+                className="mt-6 min-h-11 border border-white/15 px-4 font-semibold text-white transition hover:bg-white/5"
               >
-                Restart review flow
+                Reiniciar autorização
               </button>
             </section>
           </>
@@ -614,7 +614,7 @@ export default function AdsReadReviewPage() {
 
 function Metric({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-black/20 p-4">
+    <div className="border border-white/10 bg-transparent p-4">
       <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
         {label}
       </p>
