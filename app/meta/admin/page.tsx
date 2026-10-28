@@ -7,7 +7,7 @@ export default async function AdminOverview() {
   if (!(await currentPlatformAdmin())) redirect('/meta/admin/login')
   const connections = listConnections(), summary = inventorySummary()
   return <div className="pa-shell"><aside className="pa-sidebar"><div className="pa-wordmark">proxy<span>TECHNOLOGY</span></div>
-    <p className="pa-nav-label">PLATAFORMA META</p><nav aria-label="Administração"><Link className="pa-nav-active" href="/meta/admin">Conexões <span>03</span></Link></nav>
+    <p className="pa-nav-label">PLATAFORMA META</p><nav aria-label="Administração"><Link className="pa-nav-active" href="/meta/admin">Conexões <span>03</span></Link><Link href="/meta/admin/ads">Relatórios de tráfego <span>↗</span></Link></nav>
     <div className="pa-sidebar-bottom">Acesso da plataforma<br/><strong>Consulta administrativa</strong></div></aside>
     <div className="pa-workspace"><header className="pa-topbar"><span>Meta Provider <span className="pa-muted">/ Administração</span></span><form action={logoutAdmin}><button className="pa-text-button">Sair</button></form></header>
     <main className="pa-main"><div className="pa-heading"><div><p className="pa-eyebrow">VISÃO DA PLATAFORMA</p><h1>Conexões dos clientes</h1><p className="pa-lead">Inventário e evidências das integrações gerenciadas pela Proxy.</p></div><span className="pa-mode">SOMENTE LEITURA</span></div>
@@ -21,6 +21,10 @@ export default async function AdminOverview() {
     <div className="pa-table-wrap"><table><caption className="pa-sr">Clientes e situação documentada de suas integrações WhatsApp</caption><thead><tr><th>Cliente / produto</th><th>Canal</th><th>Situação registrada</th><th>Verificação atual</th><th><span className="pa-sr">Detalhes</span></th></tr></thead><tbody>
       {connections.map(c => <tr key={c.id}><td><div className="pa-client"><span className="pa-avatar">{c.initials}</span><div><strong>{c.name}</strong><small>{c.product}</small></div></div></td><td><span>{c.number || 'Número não conferido'}</span><small>WhatsApp Business</small></td><td><span className={`pa-badge ${c.stageKind === 'pending' ? 'pa-badge-pending' : ''}`}>{c.stage}</span></td><td><span className="pa-muted">Pendente de diagnóstico</span></td><td><Link className="pa-detail-link" href={`/meta/admin/connections/${c.id}`} aria-label={`Ver conexão de ${c.name}`}>Ver ficha <span aria-hidden="true">↗</span></Link></td></tr>)}
     </tbody></table></div>
+    <section className="pa-quick-access" aria-labelledby="meta-ads-access">
+      <div><p className="pa-eyebrow">META ADS</p><h2 id="meta-ads-access">Relatórios de tráfego</h2><p>Centralize aqui o acesso aos relatórios obtidos pela Marketing API, sem precisar memorizar rotas técnicas de review.</p></div>
+      <Link className="pa-button pa-button-link" href="/meta/admin/ads">Abrir central de relatórios <span aria-hidden="true">↗</span></Link>
+    </section>
     <section className="pa-note"><h2>Inventário não é confirmação de saúde</h2><p>Eduardo Brasil e LA Climatização já são atendidos pela Proxy, conforme informado pelo responsável. Este painel ainda não consulta a Meta nem os sistemas dos clientes. Nenhuma conexão é declarada operacional com base apenas nesse registro.</p></section>
     <footer className="pa-footer"><span>Proxy gerencia as integrações. Cada CRM mantém seu próprio contexto.</span><span>Sem acesso a conversas ou credenciais</span></footer>
     </main></div></div>
