@@ -442,8 +442,9 @@ export default function AdsReadLoginReviewPage() {
             <p className="mt-2 text-cyan-100/85">
               Proxy does not create, edit, pause, delete, or otherwise manage
               campaigns in this flow. The access token is used only on the
-              backend during this review request, is never returned to
-              JavaScript, and is not persisted by the review flow.
+              backend, is never returned to browser JavaScript, and is stored
+              only in an encrypted HTTP-only session cookie so authorized
+              read-only data can be refreshed securely.
             </p>
           </div>
         </header>
