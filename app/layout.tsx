@@ -18,7 +18,7 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: 'Proxy Technology | Software, IA, audiência e integrações',
+    default: 'Proxy Technology | Software, AI, CRM & Integrations',
     template: '%s | Proxy Technology',
   },
   description: siteDescription,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Proxy Technology | Software, IA, audiência e integrações',
     description:
-      'Produtos próprios e sistemas sob medida conectando atendimento, audiência, CRM, dados, IA, e-mail e WhatsApp Business.',
+      'Software, AI systems, CRM and integrations designed to connect customer operations, data and communication channels.',
     url: siteUrl,
     siteName,
     locale: 'pt_BR',
