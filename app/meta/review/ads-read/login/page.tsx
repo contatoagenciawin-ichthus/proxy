@@ -142,7 +142,7 @@ export default function AdsReadLoginReviewPage() {
       }
     } else if (target) {
       setStatus(
-        `Target account ${target} detected. Ready for a fresh Autorização Meta.`,
+        `Target account ${target} detected. Ready for a fresh Meta authorization.`,
       )
     }
 
@@ -251,9 +251,9 @@ export default function AdsReadLoginReviewPage() {
           setStatus(
             exchange.requestedAccountProbe?.requested
               ? exchange.requestedAccountProbe.accessible
-                ? `Autorização Meta succeeded. Requested account ${exchange.requestedAccountProbe.requested} was also resolved directly and added to the report.`
-                : `Autorização Meta succeeded, but requested account ${exchange.requestedAccountProbe.requested} could not be resolved directly: ${exchange.requestedAccountProbe.error || "unknown error"}`
-              : "Autorização Meta succeeded and read-only advertising insights were retrieved.",
+                ? `Meta authorization succeeded. Requested account ${exchange.requestedAccountProbe.requested} was also resolved directly and added to the report.`
+                : `Meta Authorization succeeded, but requested account ${exchange.requestedAccountProbe.requested} could not be resolved directly: ${exchange.requestedAccountProbe.error || "unknown error"}`
+              : "Meta Authorization succeeded and read-only advertising insights were retrieved.",
           )
         } else {
           setStatus(
@@ -394,7 +394,7 @@ export default function AdsReadLoginReviewPage() {
     setSession({})
     setStatus(
       targetAccountId
-        ? `Target account ${targetAccountId} detected. Ready for a fresh Autorização Meta.`
+        ? `Target account ${targetAccountId} detected. Ready for a fresh Meta authorization.`
         : "Ready to start Meta authorization for ads_read.",
     )
   }
@@ -416,10 +416,10 @@ export default function AdsReadLoginReviewPage() {
             META ADS · MARKETING API
           </p>
           <h1 className="mt-4 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-            Autorização Meta
+            Meta Authorization
           </h1>
           <p className="mt-5 max-w-3xl text-base leading-7 text-slate-300 md:text-lg">
-            Este fluxo solicita somente{" "}
+            This flow requests only{" "}
             <code className="text-cyan-200">ads_read</code>, exchanges the
             authorization code on the server, validates the granted scope, and
             retrieves read-only advertising performance data from accounts the
@@ -438,22 +438,23 @@ export default function AdsReadLoginReviewPage() {
           ) : null}
 
           <div className="mt-6 border border-cyan-300/20 bg-cyan-300/[0.07] p-5 text-sm leading-6 text-cyan-50">
-            <p className="font-semibold">Comportamento somente leitura</p>
+            <p className="font-semibold">Read-only behavior</p>
             <p className="mt-2 text-cyan-100/85">
               Proxy does not create, edit, pause, delete, or otherwise manage
               campaigns in this flow. The access token is used only on the
-              backend during this review request, is never returned to
-              JavaScript, and is not persisted by the review flow.
+              backend, is never returned to browser JavaScript, and is stored
+              only in an encrypted HTTP-only session cookie so authorized
+              read-only data can be refreshed securely.
             </p>
           </div>
         </header>
 
         <section className="border border-white/10 bg-transparent p-6 md:p-7">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            AUTORIZAÇÃO
+            AUTHORIZATION
           </p>
           <h2 className="mt-2 text-xl font-semibold text-white">
-            Autorizar acesso aos dados de anúncios
+            Authorize access to advertising data
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-300">
             Continue with a Meta account that has access to at least one
@@ -469,8 +470,8 @@ export default function AdsReadLoginReviewPage() {
               className="min-h-12 bg-white px-5 font-semibold text-slate-950 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {exchanging
-                ? "Carregando dados de anúncios..."
-                : "Start Autorização Meta"}
+                ? "Loading advertising data..."
+                : "Start Meta Authorization"}
             </button>
             <button
               type="button"
@@ -478,7 +479,7 @@ export default function AdsReadLoginReviewPage() {
               disabled={exchanging}
               className="min-h-12 border border-white/15 px-5 font-semibold text-white transition hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Reiniciar autorização
+              Restart authorization
             </button>
           </div>
 
@@ -515,7 +516,7 @@ export default function AdsReadLoginReviewPage() {
                 <div className="mt-5 grid gap-3 md:grid-cols-2">
                   <div className="border border-white/10 bg-transparent p-4">
                     <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
-                      Contas de anúncios acessíveis
+                      Accessible ad accounts
                     </p>
                     <p className="mt-2 text-3xl font-semibold text-white">
                       {session.adAccounts?.length || 0}
@@ -526,10 +527,10 @@ export default function AdsReadLoginReviewPage() {
                   </div>
                   <div className="border border-white/10 bg-transparent p-4">
                     <p className="text-xs uppercase tracking-[0.14em] text-slate-500">
-                      Período do relatório
+                      Reporting period
                     </p>
                     <p className="mt-2 text-lg font-semibold text-white">
-                      Últimos 30 dias
+                      Last 30 days
                     </p>
                     <p className="mt-2 text-xs text-slate-400">
                       Account summaries plus campaign-level insights for the
@@ -540,33 +541,33 @@ export default function AdsReadLoginReviewPage() {
 
                 <div className="mt-7">
                   <div className="pa-section-title">
-                    <h2>Relatórios individuais</h2>
-                    <span>{session.adAccounts?.length || 0} contas disponíveis</span>
+                    <h2>Individual reports</h2>
+                    <span>{session.adAccounts?.length || 0} accounts available</span>
                   </div>
                   <div className="pa-table-wrap">
                     <table>
                       <caption className="pa-sr">
-                        Contas de anúncios autorizadas e seus relatórios
+                        Authorized ad accounts and their reports
                       </caption>
                       <thead>
                         <tr>
-                          <th>Conta de anúncios</th>
+                          <th>Ad account</th>
                           <th>ID</th>
-                          <th>Dados</th>
-                          <th><span className="pa-sr">Relatório</span></th>
+                          <th>Data</th>
+                          <th><span className="pa-sr">Report</span></th>
                         </tr>
                       </thead>
                       <tbody>
                         {session.adAccounts?.map((account) => (
                           <tr key={account.id}>
                             <td>
-                              <strong>{account.name || "Conta sem nome"}</strong>
-                              <small>{account.currency || "Moeda não informada"}</small>
+                              <strong>{account.name || "Unnamed account"}</strong>
+                              <small>{account.currency || "Currency not provided"}</small>
                             </td>
                             <td><span>{account.id}</span></td>
                             <td>
                               <span className={account.insights ? "pa-badge" : "pa-badge pa-badge-pending"}>
-                                {account.insights ? "Insights disponíveis" : "Sem Insights"}
+                                {account.insights ? "Insights available" : "No Insights"}
                               </span>
                             </td>
                             <td>
@@ -575,10 +576,10 @@ export default function AdsReadLoginReviewPage() {
                                   className="pa-detail-link"
                                   href={`/meta/review/ads-read/client-report?account_id=${encodeURIComponent(account.id)}`}
                                 >
-                                  Ver relatório <span aria-hidden="true">↗</span>
+                                  View report <span aria-hidden="true">↗</span>
                                 </a>
                               ) : (
-                                <span className="pa-muted">Indisponível</span>
+                                <span className="pa-muted">Unavailable</span>
                               )}
                             </td>
                           </tr>
@@ -592,7 +593,7 @@ export default function AdsReadLoginReviewPage() {
                   href="/meta/review/ads-read"
                   className="mt-6 inline-flex min-h-12 items-center justify-center bg-emerald-200 px-5 font-semibold text-slate-950 transition hover:bg-emerald-100"
                 >
-                  Ver análise geral da sessão
+                  View session analysis
                 </a>
               </>
             ) : (

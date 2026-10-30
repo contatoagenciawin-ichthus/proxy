@@ -455,7 +455,7 @@ export async function POST(request: Request) {
         model: "Facebook OAuth authorization code",
         tokenExchangeCompleted: true,
         tokenVisibleToBrowser: false,
-        tokenPersistedByReviewFlow: false,
+        tokenPersistedByReviewFlow: true,
       },
       grantedScopes,
       tokenValidation: {
@@ -481,7 +481,7 @@ export async function POST(request: Request) {
           campaignInsightsByAccount,
         ).some((entry) => entry.data.length > 0),
         tokenVisibleToBrowser: false,
-        tokenPersistedByReviewFlow: false,
+        tokenPersistedByReviewFlow: true,
       },
     })
   } catch (error) {
