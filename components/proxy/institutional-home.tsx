@@ -6,7 +6,6 @@ import {
   Building2,
   CheckCircle2,
   Database,
-  FileText,
   Layers3,
   Mail,
   MessageSquareText,
@@ -157,7 +156,7 @@ export function InstitutionalHome() {
           </Link>
 
           <nav className="hidden items-center gap-7 md:flex">
-            <a href="#operacoes" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Operações</a>
+            <a href="#operacoes" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Produtos & cases</a>
             <a href="#infraestrutura" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Infraestrutura</a>
             <a href="#meta" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Meta</a>
             <Link href="/demos" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Demos</Link>
@@ -205,7 +204,7 @@ export function InstitutionalHome() {
               Tecnologia construída para entrar na operação.
             </h1>
             <p className="mt-8 max-w-2xl text-lg leading-relaxed text-white/55 lg:text-xl">
-              Desenvolvemos produtos próprios e sistemas sob medida que conectam atendimento, audiência, dados, CRM, inteligência artificial e canais de comunicação em fluxos reais de negócio.
+              Desenvolvemos software, produtos digitais e sistemas sob medida que conectam IA, CRM, dados e canais de comunicação à operação real da empresa.
             </p>
             <div className="mt-6 max-w-2xl border-l border-cyan-300/45 pl-5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-300/65">Human-Centered AI</p>
