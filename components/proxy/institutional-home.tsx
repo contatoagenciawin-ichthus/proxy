@@ -10,11 +10,8 @@ import {
   Layers3,
   Mail,
   MessageSquareText,
-  Network,
-  ShieldCheck,
   Smartphone,
   Stethoscope,
-  Workflow,
 } from "lucide-react"
 
 const operations = [
@@ -97,8 +94,8 @@ const capabilities = [
   },
   {
     icon: Mail,
-    title: "E-mail e distribuição",
-    text: "Newsletter, e-mail transacional e campanhas conectados a bases próprias, regras de segmentação, eventos e dashboards.",
+    title: "Audiência e distribuição",
+    text: "Bases próprias, opt-in, e-mail, WhatsApp, segmentação e mensuração conectados à operação para transformar conteúdo e aquisição em relacionamento direto.",
   },
   {
     icon: Layers3,
@@ -122,29 +119,6 @@ const capabilities = [
   },
 ]
 
-const audiencePillars = [
-  {
-    icon: Network,
-    title: "Base própria",
-    text: "Contatos, segmentação, histórico e fontes de aquisição organizados em uma base que pertence à operação.",
-  },
-  {
-    icon: Mail,
-    title: "Distribuição multicanal",
-    text: "Conteúdo distribuído por e-mail e WhatsApp, com fluxos preparados para diferentes origens e públicos.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Consentimento e governança",
-    text: "Opt-in, opt-out, origem, evidências e regras operacionais incorporados ao fluxo desde a entrada do contato.",
-  },
-  {
-    icon: Workflow,
-    title: "Mensuração e operação",
-    text: "Campanhas, entregas, leituras, cliques, respostas e crescimento da audiência acompanhados em dashboard.",
-  },
-]
-
 const metaInfrastructure = [
   "Onboarding de clientes com Embedded Signup",
   "Cloud API e conexão de números empresariais",
@@ -152,21 +126,6 @@ const metaInfrastructure = [
   "Webhooks de entrega, leitura, respostas e eventos",
   "Fluxos de consentimento, desautorização e exclusão de dados",
   "Arquitetura preparada para coexistência quando aplicável",
-]
-
-const groups = [
-  {
-    name: "Ichthus Marketing",
-    label: "Estratégia, comunicação e aquisição",
-    text: "A camada de estratégia, posicionamento, conteúdo, mídia e experiência digital do grupo.",
-    href: "https://www.ichthusmkt.com.br",
-  },
-  {
-    name: "Editora Ichthus",
-    label: "Conteúdo, publicação e comércio editorial",
-    text: "Operação editorial que também serve como campo real para produtos, automações, pagamentos e distribuição digital.",
-    href: "https://editoraichthus.com.br",
-  },
 ]
 
 function Status({ tone, children }: { tone: string; children: React.ReactNode }) {
@@ -199,7 +158,6 @@ export function InstitutionalHome() {
 
           <nav className="hidden items-center gap-7 md:flex">
             <a href="#operacoes" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Operações</a>
-            <a href="#audiencia" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Audiência</a>
             <a href="#infraestrutura" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Infraestrutura</a>
             <a href="#meta" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Meta</a>
             <Link href="/demos" className="text-xs uppercase tracking-[0.15em] text-white/50 transition hover:text-white">Demos</Link>
@@ -257,7 +215,7 @@ export function InstitutionalHome() {
             </div>
             <div className="mt-10 flex flex-wrap gap-3">
               <a href="#operacoes" className="bg-cyan-400 px-6 py-3 text-sm font-semibold text-black transition hover:bg-cyan-300">
-                Ver operações atuais
+                Ver produtos e cases
               </a>
               <a href="#infraestrutura" className="border border-white/20 px-6 py-3 text-sm font-semibold text-white/70 transition hover:border-white/40 hover:text-white">
                 Ver capacidade técnica
@@ -370,61 +328,6 @@ export function InstitutionalHome() {
       </section>
 
 
-      <section id="audiencia" className="relative overflow-hidden border-y border-white/10 bg-[#071012] px-6 py-24 lg:px-8 lg:py-32">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.10),transparent_30%),radial-gradient(circle_at_85%_80%,rgba(34,211,238,0.06),transparent_28%)]" />
-        <div className="relative mx-auto max-w-7xl">
-          <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-cyan-300/75">Audiência própria</p>
-              <h2 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">Conteúdo que vira relacionamento direto.</h2>
-              <p className="mt-7 max-w-2xl text-base leading-relaxed text-white/50 lg:text-lg">
-                Empresas produzem artigos, vídeos, notícias, lançamentos e conhecimento todos os dias. A Proxy transforma esse conteúdo em uma infraestrutura própria de distribuição, captação e relacionamento, sem depender apenas do alcance das redes sociais.
-              </p>
-            </div>
-            <div className="border border-cyan-300/20 bg-black/35 p-6 lg:p-7">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-300/65">Fluxo</p>
-              <div className="mt-5 grid gap-px bg-white/10 sm:grid-cols-5">
-                {["Conteúdo", "Opt-in", "E-mail + WhatsApp", "Base própria", "Dashboard"].map((item, index) => (
-                  <div key={item} className="relative bg-[#081012] px-4 py-5 text-center">
-                    <span className="font-mono text-[9px] text-white/20">0{index + 1}</span>
-                    <p className="mt-2 text-xs font-semibold text-white/75">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-12 grid gap-px bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
-            {audiencePillars.map(({ icon: Icon, title, text }) => (
-              <article key={title} className="bg-[#071012] p-7">
-                <Icon className="h-6 w-6 text-cyan-300/70" strokeWidth={1.6} />
-                <h3 className="mt-8 text-lg font-semibold">{title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-white/45">{text}</p>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-10 flex flex-col gap-6 border-t border-white/10 pt-8 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/30">
-                Aplicações
-              </p>
-              <p className="mt-3 max-w-4xl text-sm leading-relaxed text-white/50">
-                Veículos de mídia, e-commerce, educação, saúde, serviços profissionais, associações, empresas B2B e negócios que precisam manter relacionamento recorrente com uma base própria.
-              </p>
-            </div>
-            <a
-              href="https://eduardobrasil.fonsecabrasilserrao.com"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex shrink-0 items-center gap-2 border border-cyan-300/25 px-5 py-3 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300/60"
-            >
-              Ver case em produção <ArrowUpRight className="h-4 w-4" />
-            </a>
-          </div>
-        </div>
-      </section>
-
       <section id="infraestrutura" className="bg-white px-6 py-24 text-black lg:px-8 lg:py-32">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr]">
@@ -483,26 +386,6 @@ export function InstitutionalHome() {
             <p className="mt-7 border-t border-white/10 pt-5 text-xs leading-relaxed text-white/35">
               Cada implantação segue as permissões, políticas e processos aplicáveis à conta empresarial do cliente e à WhatsApp Business Platform.
             </p>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-white/10 bg-[#0b0b0b] px-6 py-20 lg:px-8 lg:py-24">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-10">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/30">Ecossistema conectado</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">Tecnologia que pode trabalhar junto de estratégia, conteúdo e aquisição.</h2>
-          </div>
-          <div className="grid gap-px bg-white/10 md:grid-cols-2">
-            {groups.map((group) => (
-              <a key={group.name} href={group.href} target="_blank" rel="noreferrer" className="group bg-[#0b0b0b] p-8 transition hover:bg-white/[0.035]">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-cyan-300/60">{group.label}</p>
-                <h3 className="mt-4 flex items-center gap-2 text-2xl font-bold">
-                  {group.name} <ArrowUpRight className="h-5 w-5 text-white/25 transition group-hover:text-cyan-300" />
-                </h3>
-                <p className="mt-4 max-w-xl text-sm leading-relaxed text-white/45">{group.text}</p>
-              </a>
-            ))}
           </div>
         </div>
       </section>
