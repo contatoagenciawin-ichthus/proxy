@@ -115,8 +115,14 @@ export function InternationalHome() {
             </Link>
             <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-300">EN</span>
             <a
+              href="https://app.proxyone.tech"
+              className="hidden border border-cyan-300/30 px-4 py-2 text-xs font-semibold text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-300/[0.05] sm:inline-flex"
+            >
+              Open platform
+            </a>
+            <a
               href="mailto:contato@proxytechnology.com.br"
-              className="hidden border border-white/15 px-4 py-2 text-xs font-semibold text-white/70 transition hover:border-cyan-400/50 hover:text-white sm:inline-flex"
+              className="hidden border border-white/15 px-4 py-2 text-xs font-semibold text-white/70 transition hover:border-cyan-400/50 hover:text-white lg:inline-flex"
             >
               Start a conversation
             </a>
@@ -332,13 +338,13 @@ export function InternationalHome() {
         <div className="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1fr_0.9fr] lg:items-start">
           <div>
             <div className="inline-flex border border-cyan-300/25 bg-cyan-300/[0.06] px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-200">
-              Meta Tech Provider · WhatsApp Business Platform
+              Meta · WhatsApp Business Platform
             </div>
             <h2 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
               Business messaging needs infrastructure behind the conversation.
             </h2>
             <p className="mt-7 max-w-2xl text-lg leading-relaxed text-white/55">
-              Proxy Technology works as a technology provider for WhatsApp Business Platform implementations, connecting business accounts, applications, CRM, automation, AI and operational data.
+              Proxy Technology implements infrastructure for WhatsApp Business Platform, connecting business accounts, applications, CRM, automation, AI and operational data.
             </p>
             <p className="mt-5 max-w-2xl text-sm leading-relaxed text-white/40">
               We do not treat WhatsApp as an isolated button. Messaging is designed together with consent, service rules, events, history and human ownership.
@@ -362,14 +368,14 @@ export function InternationalHome() {
       <section className="border-b border-white/10 bg-[#0b0b0b] px-6 py-20 lg:px-8 lg:py-24">
         <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
           <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/30">Ichthus ecosystem</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/30">Connected ecosystem</p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              Technology connected to strategy and growth.
+              Technology that can work alongside strategy, content and acquisition.
             </h2>
           </div>
           <div className="border-l border-white/10 pl-7 lg:pl-10">
             <p className="max-w-2xl text-sm leading-relaxed text-white/48">
-              Proxy is the technology arm of the Ichthus ecosystem. Ichthus connects positioning, digital experience and acquisition; Proxy builds the operational technology that can carry that demand through the business.
+              Proxy operates as an independent technology layer and can work alongside Ichthus on projects that combine positioning, acquisition and operational infrastructure.
             </p>
             <a href="https://www.ichthusmkt.com.br/en" target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cyan-300/75 transition hover:text-cyan-200">
               Visit Ichthus <ArrowUpRight className="h-4 w-4" />
