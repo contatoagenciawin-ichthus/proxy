@@ -236,51 +236,6 @@ export function InternationalHome() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-y border-white/10 bg-[#071012] px-6 py-24 lg:px-8 lg:py-32">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(34,211,238,0.10),transparent_30%),radial-gradient(circle_at_85%_80%,rgba(34,211,238,0.06),transparent_28%)]" />
-        <div className="relative mx-auto max-w-7xl">
-          <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-cyan-300/75">Customer & audience infrastructure</p>
-              <h2 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight sm:text-6xl">
-                Acquisition becomes more valuable when it connects to the operation.
-              </h2>
-              <p className="mt-7 max-w-2xl text-base leading-relaxed text-white/50 lg:text-lg">
-                We connect owned data, messaging, email, CRM and measurement so customer interest does not end at the lead form or social platform.
-              </p>
-            </div>
-            <div className="border border-cyan-300/20 bg-black/35 p-6 lg:p-7">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-300/65">Example flow</p>
-              <div className="mt-5 grid gap-px bg-white/10 sm:grid-cols-5">
-                {["Demand", "Enquiry", "Operations", "Follow-up", "Measure"].map((item, index) => (
-                  <div key={item} className="relative bg-[#081012] px-4 py-5 text-center">
-                    <span className="font-mono text-[9px] text-white/20">0{index + 1}</span>
-                    <p className="mt-2 text-xs font-semibold text-white/75">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-12 grid gap-px bg-white/10 sm:grid-cols-3">
-            {[
-              [ShieldCheck, "Governed by design", "Consent, permissions, access rules and operational ownership are considered as part of the system, not bolted on later."],
-              [MessageSquareText, "Human handoff", "Automation should know when to assist and when the right next step is a person with context."],
-              [Database, "Measurable flows", "Events, sources, states and outcomes create visibility into what the operation is actually doing."],
-            ].map(([Icon, title, text]) => {
-              const Component = Icon as typeof ShieldCheck
-              return (
-                <article key={String(title)} className="bg-[#071012] p-7">
-                  <Component className="h-6 w-6 text-cyan-300/70" strokeWidth={1.6} />
-                  <h3 className="mt-8 text-lg font-semibold">{String(title)}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-white/45">{String(text)}</p>
-                </article>
-              )
-            })}
-          </div>
-        </div>
-      </section>
-
       <section id="work" className="px-6 py-24 lg:px-8 lg:py-32">
         <div className="mx-auto max-w-7xl">
           <div className="mb-14 grid gap-8 border-b border-white/10 pb-10 lg:grid-cols-[1fr_0.7fr] lg:items-end">
@@ -291,7 +246,7 @@ export function InternationalHome() {
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-relaxed text-white/45 lg:text-base">
-              The technology changes by context. The principle does not: understand the workflow, connect the missing layer and build something the operation can own.
+              Products and custom systems running in real contexts. This is where software, AI, data and communication become operational infrastructure.
             </p>
           </div>
 
@@ -361,25 +316,6 @@ export function InternationalHome() {
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-b border-white/10 bg-[#0b0b0b] px-6 py-20 lg:px-8 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-white/30">Connected ecosystem</p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
-              Technology that can work alongside strategy, content and acquisition.
-            </h2>
-          </div>
-          <div className="border-l border-white/10 pl-7 lg:pl-10">
-            <p className="max-w-2xl text-sm leading-relaxed text-white/48">
-              Proxy operates as an independent technology layer and can work alongside Ichthus on projects that combine positioning, acquisition and operational infrastructure.
-            </p>
-            <a href="https://www.ichthusmkt.com.br/en" target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cyan-300/75 transition hover:text-cyan-200">
-              Visit Ichthus <ArrowUpRight className="h-4 w-4" />
-            </a>
           </div>
         </div>
       </section>
