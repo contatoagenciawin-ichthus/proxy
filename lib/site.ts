@@ -1,4 +1,4 @@
-const fallbackSiteUrl = "https://proxy.ichthusmkt.com.br"
+const fallbackSiteUrl = "https://proxyone.tech"
 
 function normalizeSiteUrl(value?: string) {
   const candidate = value?.trim() || fallbackSiteUrl

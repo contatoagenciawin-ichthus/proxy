@@ -25,10 +25,7 @@ const structuredData = {
       logo: `${siteUrl}/icon.svg`,
       email: "contato@proxytechnology.com.br",
       description: siteDescription,
-      areaServed: {
-        "@type": "Country",
-        name: "Brasil",
-      },
+      areaServed: "International",
       knowsAbout: [
         "Desenvolvimento de software",
         "Inteligência artificial aplicada",
