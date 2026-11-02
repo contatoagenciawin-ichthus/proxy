@@ -172,7 +172,7 @@ export function InstitutionalHome() {
               EN
             </Link>
             <a
-              href="https://app.proxyone.tech"
+              href="https://app.proxyone.tech/meta/admin"
               className="hidden border border-cyan-300/30 px-4 py-2 text-xs font-semibold text-cyan-200 transition hover:border-cyan-300/60 hover:bg-cyan-300/[0.05] sm:inline-flex"
             >
               Acessar plataforma
