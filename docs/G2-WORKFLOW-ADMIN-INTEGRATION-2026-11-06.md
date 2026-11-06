@@ -16,3 +16,18 @@ O POST valida `Origin`, tipo JSON, limite de 4096 bytes e um contrato restrito; 
 A ficha autenticada do protocolo recebeu um painel client-side para atribuir operador, registrar providências/notas, avançar etapas permitidas e exibir eventos. O componente é montado somente quando o mesmo conjunto de flags e branch exigido pela API estiver ativo. A primeira atualização usa versão 1 e inicializa o workflow via `INSERT ... SELECT` exclusivamente se o recibo já existir. A execução não conecta número nem realiza passos Meta.
 
 **Não há credencial de operador ou migration executada nesta PR**, de modo que o painel permanece inativo nas instalações atuais. A habilitação requer testes positivos e negativos de RLS com login dedicado e revisão da origem administrativa da Vercel.
+
+
+## Homologação SQL isolada — 06/11/2026
+
+**Banco:** projeto Neon `falling-mouse-74404571`, nova branch filha `g2-workflow-admin-test-20261106` (`br-hidden-voice-b62ms74u`), originada de `g2-e2e-proxy-20261103`; database `proxy_g2_homolog`.
+
+1. Migration `db/staged/0002_proxy_request_workflow_STAGED.sql` executada em transação **somente na nova branch filha**. Duas tabelas presentes, ambas com `FORCE ROW LEVEL SECURITY`. Role `proxy_connection_workflow_operator` NOLOGIN criada.
+2. Para simular o operador sem criar uma credencial externa, a branch filha recebeu `GRANT proxy_connection_workflow_operator TO proxy_g2_owner WITH SET TRUE`. **Esse grant de teste não deve ser replicado em produção.** Transações de teste executadas com `SET LOCAL ROLE proxy_connection_workflow_operator`.
+3. Sob `app.organization_id=55555555-5555-4555-8555-555555555555`, a role enxergou apenas 1 recibo (protocolo `77777777-7777-4777-8777-777777777777`). Sob `11111111-1111-4111-8111-111111111111`, enxergou os outros 2 recibos, mas **zero** workflows e eventos do protocolo `7777...`. Sem `app.organization_id`, nenhuma linha administrativa visível.
+4. Gravação real de teste na branch filha: protocolo `7777...` passou para `under_review`, versão 2, operador `233162528`, próxima providência `Validar autorização do titular`; 1 evento de auditoria persistido.
+5. Atualização com versão antiga 1 retornou zero linhas e manteve a versão 2. Outra transação alterou a linha e provocou `CHECK` inválido no evento; o Neon abortou a transação, e a leitura seguinte confirmou `stage=under_review`, `version=2` e 1 evento (rollback).
+6. `has_table_privilege`: role de recepção não tem UPDATE da tabela de workflow nem INSERT em eventos; role administrativa não tem INSERT/UPDATE nos recibos originais.
+7. **Ainda não testado:** login dedicado real `proxy_connection_workflow_operator_login`, integração com o endpoint Next.js e painel, concorrência entre sessões reais, reversões de rede, estado em outras organizações reais, múltiplos tenants ou Meta. Nenhuma env nova ou deployment de produção foi alterado.
+
+A branch original de recebimento `br-damp-breeze-b6wy5ij3` permaneceu intacta. Manter a filial de teste para validação subsequente; limpeza requer autorização específica.
