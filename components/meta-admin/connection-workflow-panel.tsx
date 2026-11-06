@@ -54,11 +54,11 @@ export default function ConnectionWorkflowPanel({organizationId,protocolId}:{org
     'Não foi possível registrar a alteração.')
    await refresh()
    setNote('');setOperatorId('');setNextAction('');setTargetStage('')
-  }catch(e){setError(e.message)}finally{setBusy(false)}
+  }catch(e){setError(e instanceof Error?e.message:'Não foi possível registrar a alteração.')}finally{setBusy(false)}
  }
  const workflow=data?.workflow
  const current=workflow?.stage||'received'
- const options=(allowed[current]||[]).map(s=>stages.find(x=>x[0]===s)).filter(Boolean)
+ const options=(allowed[current]||[]).map(s=>stages.find(x=>x[0]===s)).filter((x):x is [string,string]=>Boolean(x))
  return <section className="pa-note" aria-label="Acompanhamento administrativo" style={{marginTop:24}}>
   <h2>Acompanhamento administrativo</h2>
   <p>Registros operacionais supervisionados. Nenhuma alteração abaixo conecta, desativa ou autoriza um número na Meta.</p>
