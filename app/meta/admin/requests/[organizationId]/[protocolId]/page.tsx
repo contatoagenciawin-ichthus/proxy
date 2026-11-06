@@ -3,6 +3,7 @@ import {redirect,notFound} from 'next/navigation'
 import {currentPlatformAdmin} from '@/lib/meta-admin/auth'
 import {loadProviderConnectionRequests} from '@/lib/meta-admin/connection-requests-admin.mjs'
 import {findAdminRequestDetail} from '@/lib/meta-admin/connection-request-detail.mjs'
+import ConnectionWorkflowPanel from '@/components/meta-admin/connection-workflow-panel'
 
 export const dynamic='force-dynamic'
 export default async function RequestDetail({params}:{
@@ -30,7 +31,9 @@ export default async function RequestDetail({params}:{
        <dt>Data do recibo</dt><dd>{row.receivedAt?new Date(row.receivedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'Não informada'}</dd>
      </dl>
      <p>Responsável, pendências, Business Portfolio, WABA, Phone Number ID e testes operacionais: ainda não registrados neste protocolo.</p>
-     <p>Esta ficha é somente de leitura. Onboarding assistido e mudanças na Meta exigem autorização e etapas próprias.</p>
+     {process.env.VERCEL_ENV==='preview' && process.env.VERCEL_GIT_COMMIT_REF==='feat/g2-workflow-admin-integration-20261106' && process.env.PROXY_REQUEST_WORKFLOW_ENABLED==='true' && process.env.PROXY_CONNECTION_REQUEST_RECEIVER_ENABLED==='true' ?
+       <ConnectionWorkflowPanel organizationId={row.organizationId} protocolId={row.protocolId}/> :
+       <p>O acompanhamento administrativo ainda não está habilitado neste ambiente. Onboarding assistido e mudanças na Meta exigem autorização própria.</p>}
    </section>}
  </main>
 }
