@@ -84,3 +84,16 @@ test("G2 duplicate request never recontacts mock provider",async()=>{
  await assert.rejects(handleIchthusOAuthExchangeRequest(options),/proxy_permit_already_consumed/);
  assert.equal(calls,1);
 });
+
+test("production rejects staging permits and consumes only the Ichthus production permit",async()=>{
+ const expectedOrganizationId="e9b935b6-3349-4b2c-970d-be8ad3bc243d";
+ let consumed=0;
+ const options={...base,expectedOrganizationId,consumeOnce:async()=>{consumed++;return true},exchangeCode:async()=>{}};
+ await assert.rejects(handleIchthusOAuthExchangeRequest(options));
+ assert.equal(consumed,0);
+ const permit=issueIchthusProxyExchangePermit({organizationId:expectedOrganizationId,configId,nonceDigest:"d".repeat(64),permitId:"e".repeat(40),secret:permitSecret,now});
+ const binding=issueIchthusProxyOAuthRequest({permit,code,requestId:"f".repeat(40),secret:requestSecret,now});
+ const result=await handleIchthusOAuthExchangeRequest({...options,request:{...request,rawBody:JSON.stringify({binding,code,permit})}});
+ assert.equal(consumed,1);
+ assert.equal(result.organizationId,expectedOrganizationId);
+});
