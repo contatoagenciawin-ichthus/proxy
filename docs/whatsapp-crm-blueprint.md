@@ -1,3 +1,5 @@
+> **DIRETRIZ OBRIGATÓRIA PARA NOVAS CONEXÕES WHATSAPP:** consultar primeiro [ADR — Fluxo tenant-owned da LA Climatização](./ADR-WHATSAPP-ONBOARDING-TENANT-LA-REFERENCE-2026-10-19.md), com links para a página `/whatsapp/readiness`, Embedded Signup, backend de autorização, Vault e webhook por WABA. Eduardo Brasil é referência histórica complementar, não o padrão automático de onboarding. Não reiniciar onboarding nem reutilizar `config_id` antes da verificação específica do novo tenant.
+
 # Blueprint operacional - CRM WhatsApp
 
 ## Objetivo
