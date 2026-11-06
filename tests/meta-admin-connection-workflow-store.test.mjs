@@ -17,7 +17,10 @@ function fixture({authorized=true,receipt=true,version=1,eventFails=false}={}){
    if(sql.includes('insert into proxy_control.connection_request_workflow_events')&&eventFails)throw Error('event_insert_failed')
    if(sql.includes('select actor_id as'))return {rows:[]}
    return {rows:[]}
-  }})};commits++;return result}catch(e){rollbacks++;throw e}
+  }})
+   commits++
+   return result
+  }catch(e){rollbacks++;throw e}
  }
  return {store:createConnectionWorkflowStore({beginTransaction,
   authorizeOperator:async()=>authorized}),statements,status:()=>({commits,rollbacks})}
