@@ -31,13 +31,14 @@ export default async function AdminOverview() {
       {inbound.state==='ready'&&inbound.requests.length===0&&<p>Nenhuma solicitação recebida pelas organizações autorizadas neste ambiente.</p>}
       {inbound.state==='ready'&&inbound.requests.length>0&&<div className="pa-table-wrap"><table>
         <caption className="pa-sr">Protocolos reais, distintos dos registros manuais de WABAs</caption>
-        <thead><tr><th>Organização</th><th>Protocolo</th><th>Canal</th><th>Etapa</th><th>Recebido</th></tr></thead>
+        <thead><tr><th>Organização</th><th>Protocolo</th><th>Canal</th><th>Etapa</th><th>Recebido</th><th>Detalhes</th></tr></thead>
         <tbody>{inbound.requests.map(r=><tr key={r.product+':'+r.protocolId}>
           <td><code>{r.organizationId}</code></td>
           <td><code>{r.protocolId}</code></td>
           <td>WhatsApp</td>
           <td><span className="pa-badge pa-badge-pending">{r.status==='received_by_proxy'?'Recebido pela Proxy':r.status}</span></td>
           <td>{r.receivedAt?new Date(r.receivedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—'}</td>
+          <td><Link className="pa-detail-link" href={`/meta/admin/requests/${r.organizationId}/${r.protocolId}`}>Abrir protocolo</Link></td>
         </tr>)}</tbody>
       </table></div>}
     </section>
