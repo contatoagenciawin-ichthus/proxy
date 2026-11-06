@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { EDUARDO_ASSET, ICHTHUS_ASSET, resolveMetaHandoffCandidates, validateIchthusHandoffUrl } from "../lib/meta-onboarding-handoffs.mjs";
 
-const safeUrl = "https://relationship.ichthusmkt.com.br/api/relationship/meta/credentials";
+const safeUrl = "https://crm.ichthusmkt.com.br/api/relationship/meta/credentials";
 const configured = { ICHTHUS_META_HANDOFF_ENABLED: "true", ICHTHUS_META_HANDOFF_URL: safeUrl, ICHTHUS_HANDOFF_SIGNING_SECRET: "TEST_ONLY_signing_secret_32chars_minimum" };
 
 test("Eduardo legacy connection remains available with or without supplied identifiers", () => {
@@ -31,7 +31,8 @@ test("Ichthus requires both correct Meta asset IDs", () => {
 test("handoff destination is HTTPS, allowlisted and path-specific", () => {
   assert.equal(validateIchthusHandoffUrl(safeUrl), safeUrl);
   assert.equal(validateIchthusHandoffUrl("https://proxy-relationship-demo.vercel.app/api/relationship/meta/credentials"),"https://proxy-relationship-demo.vercel.app/api/relationship/meta/credentials");
-  for (const url of ["http://relationship.ichthusmkt.com.br/api/relationship/meta/credentials", "https://example.com/api/relationship/meta/credentials", "https://relationship.ichthusmkt.com.br/elsewhere", "https://user:pass@relationship.ichthusmkt.com.br/api/relationship/meta/credentials", "https://relationship.ichthusmkt.com.br/api/relationship/meta/credentials?token=x", "https://relationship.ichthusmkt.com.br.evil.com/api/relationship/meta/credentials", "https://unknown-preview.vercel.app/api/relationship/meta/credentials"]) {
+  assert.equal(validateIchthusHandoffUrl("https://relationship.ichthusmkt.com.br/api/relationship/meta/credentials"), "https://relationship.ichthusmkt.com.br/api/relationship/meta/credentials");
+  for (const url of ["https://crm.ichthusmkt.com.br.evil.com/api/relationship/meta/credentials", "http://relationship.ichthusmkt.com.br/api/relationship/meta/credentials", "https://example.com/api/relationship/meta/credentials", "https://relationship.ichthusmkt.com.br/elsewhere", "https://user:pass@relationship.ichthusmkt.com.br/api/relationship/meta/credentials", "https://relationship.ichthusmkt.com.br/api/relationship/meta/credentials?token=x", "https://relationship.ichthusmkt.com.br.evil.com/api/relationship/meta/credentials", "https://unknown-preview.vercel.app/api/relationship/meta/credentials"]) {
     assert.equal(validateIchthusHandoffUrl(url), null);
   }
 });
