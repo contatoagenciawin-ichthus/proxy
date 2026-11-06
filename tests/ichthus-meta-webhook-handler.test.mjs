@@ -6,7 +6,7 @@ import {verifyIchthusInboundForward} from "../lib/ichthus-whatsapp-forward-contr
 const metaSecret="TEST_ONLY_ICH_META_APP_SECRET_1234567890",secret="TEST_ONLY_ICH_FORWARD_KEY_1234567890123";
 const now=1792570000000;
 function fake(phone="107612478652254"){
- const raw=Buffer.from(JSON.stringify({object:"whatsapp_business_account",entry:[{changes:[{field:"messages",value:{
+ const raw=Buffer.from(JSON.stringify({object:"whatsapp_business_account",entry:[{id:"107697061976892",changes:[{field:"messages",value:{
   metadata:{phone_number_id:phone},messages:[{id:"wamid.synthetic_123",from:"5511999000000",type:"text",text:{body:"Orçamento"},timestamp:"1792500000"}]
  }}]}]}));
  return new Request("https://proxy.invalid/api/meta/ichthus/whatsapp/webhook",{method:"POST",headers:{
