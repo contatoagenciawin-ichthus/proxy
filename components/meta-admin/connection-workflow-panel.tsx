@@ -38,13 +38,13 @@ export default function ConnectionWorkflowPanel({organizationId,protocolId}){
  },[url])
  useEffect(()=>{refresh().catch(e=>setError(e.message))},[refresh])
  async function update(action,payload){
-  if(!data?.workflow||busy)return
+  if(!data||busy)return
   setBusy(true);setError('')
   try{
    const response=await fetch(url,{method:'POST',credentials:'same-origin',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({organizationId,protocolId,
-     expectedVersion:data.workflow.version,action,payload})})
+     expectedVersion:data.workflow?.version??1,action,payload})})
    const result=await response.json()
    if(!response.ok)throw Error(response.status===409?
     'O protocolo foi atualizado por outro operador. Atualize a página e tente novamente.':
@@ -71,13 +71,13 @@ export default function ConnectionWorkflowPanel({organizationId,protocolId}){
      <label htmlFor="proxy-operator-id">Atribuir operador (ID GitHub numérico)</label>
      <div style={{display:'flex',gap:8,marginTop:6}}>
       <input id="proxy-operator-id" value={operatorId} onChange={e=>setOperatorId(e.target.value)} inputMode="numeric" maxLength={32} style={{flex:1,minWidth:0}}/>
-      <button disabled={busy||!workflow||!/^\d{1,32}$/.test(operatorId)} onClick={()=>update('assign',{operatorId})}>Atribuir</button>
+      <button disabled={busy||!/^\d{1,32}$/.test(operatorId)} onClick={()=>update('assign',{operatorId})}>Atribuir</button>
      </div>
     </div>
     <div>
      <label htmlFor="proxy-next-action">Próxima providência</label>
      <textarea id="proxy-next-action" value={nextAction} onChange={e=>setNextAction(e.target.value)} maxLength={1000} rows={2} style={{display:'block',width:'100%',marginTop:6}}/>
-     <button disabled={busy||!workflow||!nextAction.trim()} onClick={()=>update('next_action',{text:nextAction})}>Salvar providência</button>
+     <button disabled={busy||!nextAction.trim()} onClick={()=>update('next_action',{text:nextAction})}>Salvar providência</button>
     </div>
     <div>
      <label htmlFor="proxy-stage">Alterar etapa</label>
@@ -85,12 +85,12 @@ export default function ConnectionWorkflowPanel({organizationId,protocolId}){
       <option value="">Selecione uma transição permitida</option>
       {options.map(([value,label])=><option key={value} value={value}>{label}</option>)}
      </select>
-     <button disabled={busy||!workflow||!targetStage} onClick={()=>update('stage_change',{stage:targetStage})}>Registrar etapa</button>
+     <button disabled={busy||!targetStage} onClick={()=>update('stage_change',{stage:targetStage})}>Registrar etapa</button>
     </div>
     <div>
      <label htmlFor="proxy-note">Observação para auditoria</label>
      <textarea id="proxy-note" value={note} onChange={e=>setNote(e.target.value)} maxLength={1000} rows={3} style={{display:'block',width:'100%',marginTop:6}}/>
-     <button disabled={busy||!workflow||!note.trim()} onClick={()=>update('note',{text:note})}>Registrar observação</button>
+     <button disabled={busy||!note.trim()} onClick={()=>update('note',{text:note})}>Registrar observação</button>
     </div>
    </div>
    <h3>Histórico de alterações</h3>
