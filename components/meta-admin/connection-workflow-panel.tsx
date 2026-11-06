@@ -1,7 +1,10 @@
 'use client'
 import {useCallback,useEffect,useState} from 'react'
 
-const stages=[
+type WorkflowRow={stage:string;version:number;assignedOperatorId:string|null;nextAction:string|null}
+type WorkflowEvent={recordedAt:string;action:string;actorId:string;note:string|null}
+type WorkflowData={workflow:WorkflowRow|null;events:WorkflowEvent[]}
+const stages:[string,string][]=[
  ['received','Recebido'],
  ['under_review','Em análise'],
  ['awaiting_customer','Aguardando cliente'],
@@ -11,7 +14,7 @@ const stages=[
  ['suspended','Suspenso'],
  ['cancelled','Cancelado']
 ]
-const allowed={
+const allowed:Record<string,string[]>={
  received:['under_review','cancelled'],
  under_review:['awaiting_customer','authorization_pending','suspended','cancelled'],
  awaiting_customer:['under_review','authorization_pending','cancelled'],
@@ -21,8 +24,8 @@ const allowed={
  suspended:['under_review','cancelled'],
  cancelled:[]
 }
-export default function ConnectionWorkflowPanel({organizationId,protocolId}){
- const [data,setData]=useState(null)
+export default function ConnectionWorkflowPanel({organizationId,protocolId}:{organizationId:string;protocolId:string}){
+ const [data,setData]=useState<WorkflowData|null>(null)
  const [error,setError]=useState('')
  const [busy,setBusy]=useState(false)
  const [note,setNote]=useState('')
@@ -37,7 +40,7 @@ export default function ConnectionWorkflowPanel({organizationId,protocolId}){
   setData(payload.data)
  },[url])
  useEffect(()=>{refresh().catch(e=>setError(e.message))},[refresh])
- async function update(action,payload){
+ async function update(action:string,payload:Record<string,string>){
   if(!data||busy)return
   setBusy(true);setError('')
   try{
