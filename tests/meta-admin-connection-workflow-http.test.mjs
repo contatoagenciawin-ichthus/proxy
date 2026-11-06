@@ -4,8 +4,8 @@ import {handleConnectionWorkflowHttp} from '../lib/meta-admin/connection-workflo
 const organizationId='55555555-5555-4555-8555-555555555555'
 const protocolId='77777777-7777-4777-8777-777777777777'
 const endpoint=`https://proxy-preview.example.vercel.app/api/meta/admin/requests/workflow/${organizationId}/${protocolId}`
-const env={VERCEL_ENV:'preview',VERCEL_GIT_COMMIT_REF:'feat/g2-workflow-admin-integration-20261106',
- PROXY_REQUEST_WORKFLOW_ENABLED:'true',PROXY_CONNECTION_REQUEST_RECEIVER_ENABLED:'true'}
+const env={VERCEL_ENV:'preview',VERCEL_GIT_COMMIT_REF:'feat/g2-admin-read-isolation-20261106',
+ PROXY_REQUEST_WORKFLOW_ENABLED:'true',PROXY_REQUEST_ADMIN_READ_ENABLED:'true'}
 const actor={user:{id:'233162528'}}
 const service={
  async read(x){return {workflow:{stage:'received',version:1},events:[],org:x.organizationId}},
