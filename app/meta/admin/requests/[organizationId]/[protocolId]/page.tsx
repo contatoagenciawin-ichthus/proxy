@@ -31,7 +31,7 @@ export default async function RequestDetail({params}:{
        <dt>Data do recibo</dt><dd>{row.receivedAt?new Date(row.receivedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'Não informada'}</dd>
      </dl>
      <p>Responsável, pendências, Business Portfolio, WABA, Phone Number ID e testes operacionais: ainda não registrados neste protocolo.</p>
-     {process.env.VERCEL_ENV==='preview' && process.env.VERCEL_GIT_COMMIT_REF==='feat/g2-workflow-admin-integration-20261106' && process.env.PROXY_REQUEST_WORKFLOW_ENABLED==='true' && process.env.PROXY_CONNECTION_REQUEST_RECEIVER_ENABLED==='true' ?
+     {process.env.VERCEL_ENV==='preview' && process.env.VERCEL_GIT_COMMIT_REF==='feat/g2-admin-read-isolation-20261106' && process.env.PROXY_REQUEST_WORKFLOW_ENABLED==='true' && process.env.PROXY_REQUEST_ADMIN_READ_ENABLED==='true' ?
        <ConnectionWorkflowPanel organizationId={row.organizationId} protocolId={row.protocolId}/> :
        <p>O acompanhamento administrativo ainda não está habilitado neste ambiente. Onboarding assistido e mudanças na Meta exigem autorização própria.</p>}
    </section>}
