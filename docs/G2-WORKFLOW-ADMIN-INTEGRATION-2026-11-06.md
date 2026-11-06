@@ -31,3 +31,16 @@ A ficha autenticada do protocolo recebeu um painel client-side para atribuir ope
 7. **Ainda não testado:** login dedicado real `proxy_connection_workflow_operator_login`, integração com o endpoint Next.js e painel, concorrência entre sessões reais, reversões de rede, estado em outras organizações reais, múltiplos tenants ou Meta. Nenhuma env nova ou deployment de produção foi alterado.
 
 A branch original de recebimento `br-damp-breeze-b6wy5ij3` permaneceu intacta. Manter a filial de teste para validação subsequente; limpeza requer autorização específica.
+
+
+## Credencial restrita e teste autenticado — 06/11/2026
+
+Somente na branch Neon filha `g2-workflow-admin-test-20261106` (`br-hidden-voice-b62ms74u`), foi provisionado o login `proxy_connection_workflow_preview_login`, com senha gerenciada pelo Neon, sem SUPERUSER/BYPASSRLS/CREATEROLE e com membership apenas em `proxy_connection_workflow_operator` (não pertence à role de recepção). O login tem privilégios de leitura/escrita **apenas** nas duas tabelas administrativas e leitura do recibo. A configuração inicial de escopo read-only do Neon aponta para o schema vazio `proxy_workflow_login_anchor`. A role inicial de SQL `proxy_connection_workflow_operator_login`, que não recebeu senha, foi explicitamente colocada em `NOLOGIN`.
+
+Em SQL autenticado com o login de Preview: o tenant `55555555-5555-4555-8555-555555555555` enxergou seu workflow, enquanto o tenant `11111111-1111-4111-8111-111111111111` não visualizou o protocolo `7777...`. Foi executada atualização real e auditoria no mesmo transaction: workflow `7777...`, `stage=under_review`, versão 3, próxima ação de consentimento. Nenhum registro no Neon da branch original foi alterado.
+
+A Vercel do projeto `proxy` recebeu **somente na branch Preview** `feat/g2-workflow-admin-integration-20261106` quatro envs: `PROXY_REQUEST_WORKFLOW_DATABASE_URL` (sensível, Neon filho), `PROXY_REQUEST_WORKFLOW_ENABLED=false`, `PROXY_CONNECTION_REQUEST_ALLOWED_ORGS` (tenant fictício único) e `PROXY_CONNECTION_REQUEST_RECEIVER_ENABLED=false`. Não foram copiadas credenciais de produção. O painel e a API seguem **inativos**.
+
+O runtime foi atualizado para exigir o login `proxy_connection_workflow_preview_login` e rejeitar atribuições a GitHub IDs que não estejam na lista autorizada de administradores.
+
+**Pendência real para E2E via navegador:** vincular no Preview a sessão GitHub/Proxy com origem/callback autorizados; disponibilizar a leitura de recibos exclusivamente da branch filha com login de leitura adequado; habilitar temporariamente os gates somente após revisar esses pontos, realizar edição auditada e restaurar `false`. Não reutilizar automaticamente o OAuth de outra URL. Nenhum ativo Meta ou WABA foi alterado.
