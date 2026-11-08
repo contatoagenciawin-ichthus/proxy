@@ -3,9 +3,11 @@ import { redirect } from 'next/navigation'
 import { currentPlatformAdmin } from '@/lib/meta-admin/auth'
 import { listConnections, inventorySummary } from '@/lib/meta-admin/inventory.mjs'
 import { logoutAdmin } from './actions'
+import {loadProviderConnectionRequests} from '@/lib/meta-admin/connection-requests-admin.mjs'
 export default async function AdminOverview() {
   if (!(await currentPlatformAdmin())) redirect('/meta/admin/login')
   const connections = listConnections(), summary = inventorySummary()
+  const inbound = await loadProviderConnectionRequests()
   return <div className="pa-shell"><aside className="pa-sidebar"><div className="pa-wordmark">proxy<span>TECHNOLOGY</span></div>
     <p className="pa-nav-label">PLATAFORMA META</p><nav aria-label="Administração"><Link className="pa-nav-active" href="/meta/admin">Conexões <span>03</span></Link><Link href="/meta/admin/ads">Relatórios de tráfego <span>↗</span></Link></nav>
     <div className="pa-sidebar-bottom">Acesso da plataforma<br/><strong>Consulta administrativa</strong></div></aside>
@@ -24,6 +26,25 @@ export default async function AdminOverview() {
     <section className="pa-quick-access" aria-labelledby="meta-ads-access">
       <div><p className="pa-eyebrow">META ADS</p><h2 id="meta-ads-access">Relatórios de tráfego</h2><p>Centralize aqui o acesso aos relatórios obtidos pela Marketing API, sem precisar memorizar rotas técnicas de review.</p></div>
       <Link className="pa-button pa-button-link" href="/meta/admin/ads">Abrir central de relatórios <span aria-hidden="true">↗</span></Link>
+    </section>
+    <section className="pa-note" aria-label="Solicitações de integração recebidas">
+      <h2>Solicitações de integração recebidas</h2>
+      <p>Pedidos reais recebidos do CRM. Um protocolo confirmado não significa que o número esteja conectado à Meta.</p>
+      {inbound.state==='disabled'&&<p>Consulta administrativa ainda desativada.</p>}
+      {inbound.state==='unavailable'&&<p role="alert">Não foi possível consultar os protocolos. Nenhum estado foi presumido.</p>}
+      {inbound.state==='ready'&&inbound.requests.length===0&&<p>Nenhuma solicitação encontrada para as organizações autorizadas.</p>}
+      {inbound.state==='ready'&&inbound.requests.length>0&&<div className="pa-table-wrap"><table>
+        <caption className="pa-sr">Solicitações persistidas na Proxy</caption>
+        <thead><tr><th>Empresa</th><th>Protocolo</th><th>Canal</th><th>Estado</th><th>Recebido</th><th>Detalhes</th></tr></thead>
+        <tbody>{inbound.requests.map(r=><tr key={r.product+':'+r.protocolId}>
+          <td>{r.organizationId==='e9b935b6-3349-4b2c-970d-be8ad3bc243d'?'Ichthus Marketing':r.organizationId}</td>
+          <td><code>{r.protocolId}</code></td>
+          <td>WhatsApp</td>
+          <td><span className="pa-badge pa-badge-pending">{r.status==='received_by_proxy'?'Recebido pela Proxy':r.status}</span></td>
+          <td>{r.receivedAt?new Date(r.receivedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'—'}</td>
+          <td><Link className="pa-detail-link" href={`/meta/admin/requests/${r.organizationId}/${r.protocolId}`}>Abrir protocolo</Link></td>
+        </tr>)}</tbody>
+      </table></div>}
     </section>
     <section className="pa-note"><h2>Inventário não é confirmação de saúde</h2><p>Eduardo Brasil e LA Climatização já são atendidos pela Proxy, conforme informado pelo responsável. Este painel ainda não consulta a Meta nem os sistemas dos clientes. Nenhuma conexão é declarada operacional com base apenas nesse registro.</p></section>
     <footer className="pa-footer"><span>Proxy gerencia as integrações. Cada CRM mantém seu próprio contexto.</span><span>Sem acesso a conversas ou credenciais</span></footer>
