@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS proxy_control.whatsapp_provisioning (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE (product,organization_id,protocol_id),
+  UNIQUE (id,organization_id),
   CHECK (phase IN ('requested','operator_assigned','awaiting_authorization','authorization_received','credential_secured','diagnosing','ready_for_validation','active','blocked','revoked')),
   CHECK (waba_id IS NULL OR waba_id ~ '^[0-9]{5,24}$'),
   CHECK (phone_number_id IS NULL OR phone_number_id ~ '^[0-9]{5,24}$'),
@@ -31,6 +32,7 @@ CREATE TABLE IF NOT EXISTS proxy_control.whatsapp_provisioning (
 CREATE TABLE IF NOT EXISTS proxy_control.whatsapp_credential_envelopes (
   provisioning_id uuid PRIMARY KEY REFERENCES proxy_control.whatsapp_provisioning(id) ON DELETE RESTRICT,
   organization_id uuid NOT NULL,
+  CONSTRAINT envelope_tenant_fk FOREIGN KEY (provisioning_id,organization_id) REFERENCES proxy_control.whatsapp_provisioning(id,organization_id),
   envelope_version integer NOT NULL CHECK (envelope_version=1),
   key_version integer NOT NULL CHECK (key_version>=1),
   iv text NOT NULL,
@@ -46,6 +48,7 @@ CREATE TABLE IF NOT EXISTS proxy_control.whatsapp_provisioning_events (
   id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   provisioning_id uuid NOT NULL REFERENCES proxy_control.whatsapp_provisioning(id) ON DELETE RESTRICT,
   organization_id uuid NOT NULL,
+  CONSTRAINT event_tenant_fk FOREIGN KEY (provisioning_id,organization_id) REFERENCES proxy_control.whatsapp_provisioning(id,organization_id),
   event_type text NOT NULL CHECK (length(event_type) BETWEEN 3 AND 80),
   operator_id text,
   details jsonb NOT NULL DEFAULT '{}'::jsonb,
