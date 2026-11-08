@@ -37,8 +37,8 @@ export default async function IchthusDiagnostic({params}:{
    <div style={{display:'grid',gap:16}}>
     {labels.map(([key,label])=><div key={key} style={{borderTop:'1px solid #263341',paddingTop:12}}>
      <strong>{label}</strong>
-     <p><span className="pa-badge pa-badge-pending">{translations[report.checks[key].status]||'Não verificado'}</span></p>
-     <p>{report.checks[key].detail}</p>
+     <p><span className="pa-badge pa-badge-pending">{translations[report.checks[key]?.status||'error']||'Não verificado'}</span></p>
+     <p>{report.checks[key]?.detail||'Verificação indisponível.'}</p>
     </div>)}
    </div>
   </section>
