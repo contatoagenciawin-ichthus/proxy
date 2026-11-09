@@ -16,7 +16,7 @@ function fixture({approved=true,storeSuccess=true}={}){
  const fetchFn=async(url,init)=>{
   calls.push('meta:'+init.method)
   if(url.includes('/oauth/access_token'))return response({access_token:token})
-  if(url.includes('/debug_token'))return response({data:{is_valid:true,app_id:appId,scopes:['whatsapp_business_management','whatsapp_business_messaging'],expires_at:0}})
+  if(new URLSearchParams(init.body).has('batch'))return response([{code:200,body:JSON.stringify({data:{is_valid:true,app_id:appId,scopes:['whatsapp_business_management','whatsapp_business_messaging'],expires_at:0}})}])
   if(url.includes('/phone_numbers'))return response({data:[{id:id.phoneNumberId}]})
   return response({id:id.wabaId})
  }
