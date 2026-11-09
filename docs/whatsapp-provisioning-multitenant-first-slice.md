@@ -131,3 +131,41 @@ valores por cliente na Vercel.
 
 **Não executar Embedded Signup novamente, não mexer em webhook global,
 não abrir sessão Meta com código anterior, não alterar WABA de LA/Eduardo.**
+
+
+## Incremento administrativo — 09/11/2026 (PR #53)
+- Nova página `/meta/admin/requests/[organizationId]/[protocolId]/onboarding`
+  exige sessão GitHub de **administrador Proxy** e recibo real validado.
+  A navegação parte da ficha já existente, somente quando a flag de plataforma
+  `PROXY_PROVISIONING_ENABLED=true`.
+- Endpoints `POST /api/meta/admin/provisioning/start` e `.../finalize`:
+  autenticação administrativa, Origin HTTPS estrito, `sec-fetch-site`,
+  Content-Type JSON, corpo limitado, organização/protocolo conferidos no
+  PostgreSQL sob RLS. Nenhum cliente fornece ID de operador.
+- Antes de emitir autorização, `start` confirma a chave-mestra, segredo da
+  Meta, ID da configuração e as permissões **reais** do papel de escrita do
+  cofre. Sem isso, a autorização não abre.
+- Para a Ichthus, o registro histórico de WABA e Phone Number ID foi usado
+  exclusivamente como **restrição de correspondência do piloto**; o Graph
+  continua responsável por validar acesso efetivo e associação do número.
+  Futuros tenants sem IDs conhecidos exigirão confirmação dos ativos
+  retornados pela Meta antes de finalização.
+- A interface abre o SDK apenas quando a sessão já foi preparada, vinculada
+  ao clique direto do operador para evitar bloqueio de popup. OAuth code e
+  nonce ficam só na memória do browser, nunca em sessionStorage.
+  O retorno oficial Meta é confrontado com o protocolo. Quando a Meta não
+  envia o número no evento de coexistência, um ID de número já conhecido
+  e fixado pelo servidor pode ser usado como expectativa, **não** como prova.
+- O endpoint final chama o verificador Graph e o writer transacional cifrado,
+  sem enviar tokens ao CRM ou ao browser. Estados do canal não avançam
+  automaticamente para `active`.
+- Corrigidos caminhos de código para rejeitar requisições oversized mesmo sem
+  header Content-Length e bloquear origins externos.
+
+### Ativação ainda bloqueada
+**Não aplicar em produção nesta rodada.** Migração/roles/chave da plataforma
+continuam sem aprovação e sem execução. A homologação Graph API real,
+compatibilidade da configuração Meta de coexistência, provisionamento de
+identidade de serviço, leitura controlada do cofre para diagnósticos e
+feedback dos estados ao CRM ainda não foram concluídos.
+A integração legado Eduardo Brasil e o callback global da Meta não mudaram.
