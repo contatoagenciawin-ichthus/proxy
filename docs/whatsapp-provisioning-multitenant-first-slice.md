@@ -93,3 +93,41 @@ Para aplicar migrations, criar roles dedicadas e provisionar a chave de
 criptografia de plataforma, é necessária revisão de segurança e aprovação
 operacional explícita. Não pedir credenciais por chat nem provisionar
 valores por cliente na Vercel.
+
+
+## Incremento de segurança — 09/11/2026 (finalização OAuth, sem endpoint público)
+- `meta-authorization-verifier.mjs`: valida servidor-servidor app ID,
+  validade/escopos do token, WABA e pertencimento do número usando Meta Graph
+  API; sanitiza erros e falha fechado com paginação incompleta.
+  A troca real via Graph ainda não foi ensaiada com credencial operacional.
+- `meta-authorization-finalize.mjs`: primeiro consulta sessão do operador e
+  protocolo com hash de nonce, depois troca o código Meta e só encaminha
+  dados verificados ao writer do cofre. Não existe rota HTTP para disparar isso.
+- `provisioning-store.mjs`: `checkAuthorization` é somente leitura. O
+  método anterior de consumo isolado foi retirado, para não queimar a sessão
+  sem guardar o token.
+- `credential-writer.mjs`: consumo do nonce de uso único, inserção cifrada,
+  transição do provisionamento e evento de auditoria agora compartilham **uma
+  única transação**. Falha do writer reverte também consumo do nonce.
+  É necessário um papel DB com UPDATE na tabela de sessões, mas **sem**
+  SELECT/UPDATE/DELETE no cofre.
+- Migração também prevê unicidade global de Phone Number ID não revogado
+  para evitar provisionamento concorrente do mesmo número a tenants distintos.
+- CI de segurança da branch passou no commit
+  `9db7a994063cbbf2f01495d134dcf0c17b1eb9fd`.
+
+### Bloqueios antes de executar Meta de verdade
+1. Revisar e aplicar esquema + grants em ambiente de testes; testar roles reais e RLS.
+2. Criar endpoint administrativo autenticado + proteção CSRF, vinculado a
+   protocolo existente, usando origem e operador verificados pelo servidor;
+   bloquear acesso direto pelo onboarding legado.
+3. Validar o contrato **real** de troca de código no Graph v26 e retorno
+   de eventos da configuração de coexistência, com proteção contra múltiplas
+   execuções, concorrência e callbacks inesperados.
+4. Provisionar uma chave-mestra versionada da **plataforma**, não de clientes,
+   com plano de rotação/recuperação; separar papel que lê o token do que o grava.
+5. Encadear diagnóstico de somente leitura PR #51 e atualizar status no CRM,
+   sem marcar como operacional antes dos testes de mensagem.
+
+**Não executar Embedded Signup novamente, não mexer em webhook global,
+não abrir sessão Meta com código anterior, não alterar WABA de LA/Eduardo.**
