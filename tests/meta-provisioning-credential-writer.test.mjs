@@ -13,6 +13,7 @@ function mock({role='proxy_credential_writer_login',phase='authorization_receive
   async query(sql,values=[]){
    calls.push({sql,values})
    if(sql.includes('from pg_roles'))return {rows:[{name:role,rolsuper:false,rolbypassrls:false,rolcreaterole:false}]}
+   if(sql.includes('has_table_privilege'))return {rows:[{vault_insert:true,vault_read:false,vault_update:false,vault_delete:false}]}
    if(sql.includes('from proxy_control.whatsapp_provisioning where'))return {rows:[{id:'b1111111-1111-4111-8111-111111111111',phase,operator_id:operatorId,waba_id:null,phone_number_id:null,meta_app_id:null}]}
    if(sql.includes('from proxy_control.whatsapp_authorization_sessions'))return {rows:session?[{'?column?':1}]:[]}
    if(sql.includes('insert into proxy_control.whatsapp_credential_envelopes'))return {rows:insert?[{provisioning_id:'b1111111-1111-4111-8111-111111111111'}]:[]}
