@@ -11,6 +11,7 @@ function harness({role='proxy_provisioning_runtime_login',receipt=true,existed=f
   async query(sql,values=[]){
    calls.push({sql,values})
    if(sql.includes('from pg_roles'))return {rows:[{name:role,rolcanlogin:true,rolsuper:false,rolbypassrls:false,rolcreaterole:false}]}
+   if(sql.includes('has_table_privilege'))return {rows:[{receipt_read:true,receipt_write:false,vault_read:false,vault_write:false}]}
    if(sql.includes('from proxy_control.connection_requests'))return {rows:receipt?[{id:'e1111111-1111-4111-8111-111111111111',channel:'whatsapp',status:'received_by_proxy'}]:[]}
    if(sql.includes('insert into proxy_control.whatsapp_provisioning\n'))return {rows:existed?[]:[{id:'b1111111-1111-4111-8111-111111111111',phase:'operator_assigned',operator_id:operatorId}]}
    if(sql.includes('from proxy_control.whatsapp_provisioning\n'))return {rows:[{id:'b1111111-1111-4111-8111-111111111111',phase:'operator_assigned',operator_id:operatorId}]}
