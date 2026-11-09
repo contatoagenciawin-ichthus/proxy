@@ -17,7 +17,13 @@ function mock({invalidApp=false,missingScopes=false,mismatchedPhone=false,paged=
   assert.ok(!url.includes(authorizationCode))
   assert.ok(!url.includes(appSecret))
   if(url.includes('/oauth/access_token'))return response({access_token:accessToken})
-  if(url.includes('/debug_token'))return response({data:{is_valid:true,app_id:invalidApp?'1234567890123456':appId,scopes:missingScopes?[]:scopes,expires_at:0}})
+  if(options.body && new URLSearchParams(options.body).has('batch')){
+   const [op]=JSON.parse(new URLSearchParams(options.body).get('batch'))
+   assert.equal(op.method,'GET')
+   assert.equal(new URL(op.relative_url,'https://graph.facebook.com/').searchParams.get('input_token'),accessToken)
+   assert.ok(!url.includes(accessToken))
+   return response([{code:200,body:JSON.stringify({data:{is_valid:true,app_id:invalidApp?'1234567890123456':appId,scopes:missingScopes?[]:scopes,expires_at:0}})}])
+  }
   if(denied)return response({error:{message:'do-not-expose-this-meta-message',code:200}},403)
   if(url.includes('/phone_numbers'))return response({data:[{id:mismatchedPhone?'1234567890123456':phoneNumberId}],...(paged?{paging:{next:'https://graph.facebook.com/next'}}:{})})
   return response({id:wabaId})
