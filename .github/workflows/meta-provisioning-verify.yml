@@ -1,0 +1,24 @@
+name: Proxy Meta Provisioning checks
+on:
+  pull_request:
+    paths:
+      - 'lib/meta-provisioning/**'
+      - 'tests/meta-provisioning-*.test.mjs'
+      - 'migrations/20261108_proxy_multitenant_provisioning.sql'
+      - '.github/workflows/meta-provisioning-verify.yml'
+  workflow_dispatch:
+jobs:
+  verify-provisioning:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript module syntax
+        run: |
+          for f in lib/meta-provisioning/*.mjs tests/meta-provisioning-*.test.mjs; do node --check "$f"; done
+      - name: Run deterministic security tests
+        run: node --test tests/meta-provisioning-*.test.mjs
