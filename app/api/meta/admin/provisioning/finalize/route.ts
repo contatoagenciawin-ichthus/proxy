@@ -38,7 +38,10 @@ export async function POST(request:Request){
   return NextResponse.json({ok:true,stored:result.stored,
    fingerprint:result.fingerprint,checkedAt:result.checkedAt},
    {headers})
- }catch{
+ }catch(error){
+  const reason=error instanceof Error ? error.message : ''
+  const known=/^(meta_(api_rejected|transport_unavailable|invalid_response|token_missing|wrong_app_or_invalid_token|missing_scopes|expired_token|wrong_waba|phone_not_in_waba|finalization_session_invalid)|credential_writer_(wrong_protocol_or_phase|invalid_or_consumed_session|asset_conflict|already_persisted))$/
+  console.warn('Provisioning finalization failed',known.test(reason)?reason:'unclassified')
   // OAuth codes can only be used once. Failure must not suggest replay.
   return NextResponse.json({ok:false,reason:'finalization_unverified_new_authorization_may_be_required'},
    {status:409,headers})
