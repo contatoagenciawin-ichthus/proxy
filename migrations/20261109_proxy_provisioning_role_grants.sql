@@ -21,7 +21,7 @@ GRANT INSERT ON proxy_control.whatsapp_provisioning_events
 
 GRANT SELECT,UPDATE ON proxy_control.whatsapp_provisioning
  TO proxy_credential_writer_login;
-GRANT SELECT ON proxy_control.whatsapp_authorization_sessions
+GRANT SELECT,UPDATE ON proxy_control.whatsapp_authorization_sessions
  TO proxy_credential_writer_login;
 GRANT INSERT ON proxy_control.whatsapp_credential_envelopes
  TO proxy_credential_writer_login;
