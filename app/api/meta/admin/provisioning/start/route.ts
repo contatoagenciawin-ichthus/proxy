@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server'
 import {currentPlatformAdmin} from '@/lib/meta-admin/auth'
 import {getAdminConfig} from '@/lib/meta-admin/policy.mjs'
 import {getProvisioningStore,provisioningEnabled,verifyProvisioningInfrastructure} from '@/lib/meta-provisioning/runtime.mjs'
-import {verifyProvisioningPost,validateProvisioningBody} from '@/lib/meta-provisioning/admin-request-policy.mjs'
+import {verifyProvisioningPost,validateProvisioningBody,readBoundedProvisioningJson} from '@/lib/meta-provisioning/admin-request-policy.mjs'
 import {expectedAssetsForReceipt} from '@/lib/meta-provisioning/expected-assets.mjs'
 export const runtime='nodejs'
 export const dynamic='force-dynamic'
@@ -18,7 +18,7 @@ export async function POST(request:Request){
  if(!provisioningEnabled())
   return NextResponse.json({ok:false,reason:'not_enabled'},{status:503,headers})
  try{
-  const body=await request.json()
+  const body=await readBoundedProvisioningJson(request)
   const {organizationId,protocolId}=validateProvisioningBody(body)
   await verifyProvisioningInfrastructure()
   const store=getProvisioningStore()
