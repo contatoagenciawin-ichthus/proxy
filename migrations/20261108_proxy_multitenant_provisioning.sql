@@ -56,6 +56,160 @@ CREATE TABLE IF NOT EXISTS proxy_control.whatsapp_provisioning_events (
   CHECK (jsonb_typeof(details)='object')
 );
 
+CREATE TABLE IF NOT EXISTS proxy_control.whatsapp_authorization_sessions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  provisioning_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  operator_id text NOT NULL CHECK (operator_id ~ '^[A-Za-z0-9_-]{3,128}
+ ON proxy_control.whatsapp_provisioning(organization_id,phase);
+CREATE INDEX IF NOT EXISTS whatsapp_provisioning_events_org_recorded_idx
+ ON proxy_control.whatsapp_provisioning_events(organization_id,recorded_at DESC);
+
+ALTER TABLE proxy_control.whatsapp_provisioning ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_credential_envelopes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_credential_envelopes FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning_events FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_authorization_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_authorization_sessions FORCE ROW LEVEL SECURITY;
+
+-- Intentional separation: one dedicated role may read status; a distinct,
+-- audited credential-writer role will receive explicit UPDATE/INSERT only on
+-- the envelope store. NO browser or CRM role receives credential read grants.
+CREATE POLICY provisioning_tenant_scope ON proxy_control.whatsapp_provisioning
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+CREATE POLICY envelopes_tenant_scope ON proxy_control.whatsapp_credential_envelopes
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+CREATE POLICY events_tenant_scope ON proxy_control.whatsapp_provisioning_events
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+
+CREATE POLICY authorization_sessions_tenant_scope ON proxy_control.whatsapp_authorization_sessions
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+
+COMMIT;
+),
+  nonce_digest char(64) NOT NULL CHECK (nonce_digest ~ '^[a-f0-9]{64}
+ ON proxy_control.whatsapp_provisioning(organization_id,phase);
+CREATE INDEX IF NOT EXISTS whatsapp_provisioning_events_org_recorded_idx
+ ON proxy_control.whatsapp_provisioning_events(organization_id,recorded_at DESC);
+
+ALTER TABLE proxy_control.whatsapp_provisioning ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_credential_envelopes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_credential_envelopes FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning_events FORCE ROW LEVEL SECURITY;
+
+-- Intentional separation: one dedicated role may read status; a distinct,
+-- audited credential-writer role will receive explicit UPDATE/INSERT only on
+-- the envelope store. NO browser or CRM role receives credential read grants.
+CREATE POLICY provisioning_tenant_scope ON proxy_control.whatsapp_provisioning
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+CREATE POLICY envelopes_tenant_scope ON proxy_control.whatsapp_credential_envelopes
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+CREATE POLICY events_tenant_scope ON proxy_control.whatsapp_provisioning_events
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+
+COMMIT;
+),
+  expected_waba_id text NOT NULL CHECK (expected_waba_id ~ '^[0-9]{5,24}
+ ON proxy_control.whatsapp_provisioning(organization_id,phase);
+CREATE INDEX IF NOT EXISTS whatsapp_provisioning_events_org_recorded_idx
+ ON proxy_control.whatsapp_provisioning_events(organization_id,recorded_at DESC);
+
+ALTER TABLE proxy_control.whatsapp_provisioning ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_credential_envelopes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_credential_envelopes FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning_events FORCE ROW LEVEL SECURITY;
+
+-- Intentional separation: one dedicated role may read status; a distinct,
+-- audited credential-writer role will receive explicit UPDATE/INSERT only on
+-- the envelope store. NO browser or CRM role receives credential read grants.
+CREATE POLICY provisioning_tenant_scope ON proxy_control.whatsapp_provisioning
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+CREATE POLICY envelopes_tenant_scope ON proxy_control.whatsapp_credential_envelopes
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+CREATE POLICY events_tenant_scope ON proxy_control.whatsapp_provisioning_events
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+
+COMMIT;
+),
+  expected_phone_number_id text NOT NULL CHECK (expected_phone_number_id ~ '^[0-9]{5,24}
+ ON proxy_control.whatsapp_provisioning(organization_id,phase);
+CREATE INDEX IF NOT EXISTS whatsapp_provisioning_events_org_recorded_idx
+ ON proxy_control.whatsapp_provisioning_events(organization_id,recorded_at DESC);
+
+ALTER TABLE proxy_control.whatsapp_provisioning ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_credential_envelopes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_credential_envelopes FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning_events FORCE ROW LEVEL SECURITY;
+
+-- Intentional separation: one dedicated role may read status; a distinct,
+-- audited credential-writer role will receive explicit UPDATE/INSERT only on
+-- the envelope store. NO browser or CRM role receives credential read grants.
+CREATE POLICY provisioning_tenant_scope ON proxy_control.whatsapp_provisioning
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+CREATE POLICY envelopes_tenant_scope ON proxy_control.whatsapp_credential_envelopes
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+CREATE POLICY events_tenant_scope ON proxy_control.whatsapp_provisioning_events
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+
+COMMIT;
+),
+  expected_app_id text NOT NULL CHECK (expected_app_id ~ '^[0-9]{5,24}
+ ON proxy_control.whatsapp_provisioning(organization_id,phase);
+CREATE INDEX IF NOT EXISTS whatsapp_provisioning_events_org_recorded_idx
+ ON proxy_control.whatsapp_provisioning_events(organization_id,recorded_at DESC);
+
+ALTER TABLE proxy_control.whatsapp_provisioning ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_credential_envelopes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_credential_envelopes FORCE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE proxy_control.whatsapp_provisioning_events FORCE ROW LEVEL SECURITY;
+
+-- Intentional separation: one dedicated role may read status; a distinct,
+-- audited credential-writer role will receive explicit UPDATE/INSERT only on
+-- the envelope store. NO browser or CRM role receives credential read grants.
+CREATE POLICY provisioning_tenant_scope ON proxy_control.whatsapp_provisioning
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+CREATE POLICY envelopes_tenant_scope ON proxy_control.whatsapp_credential_envelopes
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+CREATE POLICY events_tenant_scope ON proxy_control.whatsapp_provisioning_events
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+
+COMMIT;
+),
+  issued_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  consumed_at timestamptz,
+  CONSTRAINT authorization_tenant_fk FOREIGN KEY (provisioning_id,organization_id)
+   REFERENCES proxy_control.whatsapp_provisioning(id,organization_id),
+  CHECK (expires_at > issued_at),
+  UNIQUE (organization_id,nonce_digest)
+);
+
 CREATE INDEX IF NOT EXISTS whatsapp_provisioning_org_phase_idx
  ON proxy_control.whatsapp_provisioning(organization_id,phase);
 CREATE INDEX IF NOT EXISTS whatsapp_provisioning_events_org_recorded_idx
