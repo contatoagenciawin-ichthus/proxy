@@ -54,7 +54,7 @@ test('privileged or wrong DB user cannot access credential writer',async()=>{
  assert.ok(!h.calls.some(x=>x.sql==='begin'))
 })
 test('wrong phase, missing session or duplicated credential fail closed',async()=>{
- for(const options of [{phase:'awaiting_authorization'},{session:false},{insert:false}]){
+ for(const options of [{phase:'requested'},{session:false},{insert:false}]){
   const h=mock(options)
   await assert.rejects(createCredentialWriter({pool:h.pool,expectedAppId:identity.appId,rootKeyHex}).store(args))
   assert.ok(h.calls.some(x=>x.sql==='rollback'))
