@@ -15,7 +15,7 @@ function harness({role='proxy_provisioning_runtime_login',receipt=true,existed=f
    if(sql.includes('from proxy_control.connection_requests'))return {rows:receipt?[{id:'e1111111-1111-4111-8111-111111111111',channel:'whatsapp',status:'received_by_proxy'}]:[]}
    if(sql.includes('insert into proxy_control.whatsapp_provisioning\n'))return {rows:existed?[]:[{id:'b1111111-1111-4111-8111-111111111111',phase:'operator_assigned',operator_id:operatorId}]}
    if(sql.includes('from proxy_control.whatsapp_provisioning\n'))return {rows:[{id:'b1111111-1111-4111-8111-111111111111',phase:'operator_assigned',operator_id:operatorId}]}
-   if(sql.includes('from proxy_control.whatsapp_authorization_sessions'))return {rows:active?[{id:'a1111111-1111-4111-8111-111111111111'}]:[]}
+   if(sql.includes('from proxy_control.whatsapp_authorization_sessions') && !sql.includes('from proxy_control.whatsapp_authorization_sessions s'))return {rows:active?[{id:'a1111111-1111-4111-8111-111111111111'}]:[]}
    if(sql.includes('insert into proxy_control.whatsapp_authorization_sessions'))return {rows:[{id:'a1111111-1111-4111-8111-111111111111',expires_at:'2026-11-09T14:00:00Z'}]}
    if(sql.includes('from proxy_control.whatsapp_authorization_sessions s'))return {rows:consume?[{provisioning_id:'b1111111-1111-4111-8111-111111111111'}]:[]}
    return {rows:[]}
