@@ -1,0 +1,19 @@
+name: Ichthus WhatsApp ingress
+on:
+  pull_request:
+    paths:
+      - 'lib/ichthus-*.mjs'
+      - 'tests/ichthus-*.test.mjs'
+      - 'app/api/meta/ichthus/whatsapp/**'
+      - '.github/workflows/ichthus-inbound.yml'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test tests/ichthus-coexistence-events.test.mjs tests/ichthus-meta-webhook-handler.test.mjs tests/ichthus-whatsapp-forward-client.test.mjs
