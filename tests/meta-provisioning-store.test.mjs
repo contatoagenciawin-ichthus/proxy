@@ -17,7 +17,7 @@ function harness({role='proxy_provisioning_runtime_login',receipt=true,existed=f
    if(sql.includes('from proxy_control.whatsapp_provisioning\n'))return {rows:[{id:'b1111111-1111-4111-8111-111111111111',phase:'operator_assigned',operator_id:operatorId}]}
    if(sql.includes('from proxy_control.whatsapp_authorization_sessions'))return {rows:active?[{id:'a1111111-1111-4111-8111-111111111111'}]:[]}
    if(sql.includes('insert into proxy_control.whatsapp_authorization_sessions'))return {rows:[{id:'a1111111-1111-4111-8111-111111111111',expires_at:'2026-11-09T14:00:00Z'}]}
-   if(sql.includes('update proxy_control.whatsapp_authorization_sessions'))return {rows:consume?[{provisioning_id:'b1111111-1111-4111-8111-111111111111'}]:[]}
+   if(sql.includes('from proxy_control.whatsapp_authorization_sessions s'))return {rows:consume?[{provisioning_id:'b1111111-1111-4111-8111-111111111111'}]:[]}
    return {rows:[]}
   },release(){calls.push({sql:'RELEASE'})}
  }
@@ -66,16 +66,17 @@ test('authorization session uses a hash only, with single active session',async(
  const pending=harness({active:true})
  await assert.rejects(createProvisioningStore({pool:pending.pool}).issueAuthorization(permit),/already_pending/)
 })
-test('consumption is atomic and rejects already used/expired/wrong asset',async()=>{
+test('authorization preflight performs read-only check and keeps one-time nonce secret',async()=>{
  const h=harness()
- const input={organizationId:org,sessionId:'a1111111-1111-4111-8111-111111111111',nonce:'b'.repeat(43),operatorId,wabaId:permit.expectedWabaId,phoneNumberId:permit.expectedPhoneNumberId}
- const out=await createProvisioningStore({pool:h.pool}).consumeAuthorization(input)
+ const input={organizationId:org,protocolId:protocol,sessionId:'a1111111-1111-4111-8111-111111111111',nonce:'b'.repeat(43),operatorId,wabaId:permit.expectedWabaId,phoneNumberId:permit.expectedPhoneNumberId}
+ const out=await createProvisioningStore({pool:h.pool}).checkAuthorization(input)
  assert.ok(out.provisioningId)
- const statement=h.calls.find(x=>x.sql.includes('update proxy_control.whatsapp_authorization_sessions'))
+ const statement=h.calls.find(x=>x.sql.includes('from proxy_control.whatsapp_authorization_sessions s'))
  assert.ok(statement.sql.includes('consumed_at is null'))
  assert.ok(statement.sql.includes('expires_at>now()'))
- assert.ok(statement.sql.includes('p.phase=\'awaiting_authorization\''))
+ assert.ok(statement.sql.includes("p.phase='awaiting_authorization'"))
  assert.ok(!JSON.stringify(h.calls).includes(input.nonce))
- const used=harness({consume:false})
- await assert.rejects(createProvisioningStore({pool:used.pool}).consumeAuthorization(input),/invalid_or_consumed/)
+ assert.ok(!h.calls.some(x=>x.sql.includes('update proxy_control.whatsapp_authorization_sessions')))
+ const denied=harness({consume:false})
+ await assert.rejects(createProvisioningStore({pool:denied.pool}).checkAuthorization(input),/invalid_or_consumed/)
 })
