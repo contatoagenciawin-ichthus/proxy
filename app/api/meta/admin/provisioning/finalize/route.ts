@@ -2,7 +2,7 @@ import {NextResponse} from 'next/server'
 import {currentPlatformAdmin} from '@/lib/meta-admin/auth'
 import {getAdminConfig} from '@/lib/meta-admin/policy.mjs'
 import {getProvisioningStore,getCredentialWriter,provisioningEnabled} from '@/lib/meta-provisioning/runtime.mjs'
-import {verifyProvisioningPost,validateProvisioningBody} from '@/lib/meta-provisioning/admin-request-policy.mjs'
+import {verifyProvisioningPost,validateProvisioningBody,readBoundedProvisioningJson} from '@/lib/meta-provisioning/admin-request-policy.mjs'
 import {finalizeVerifiedMetaAuthorization} from '@/lib/meta-provisioning/meta-authorization-finalize.mjs'
 export const runtime='nodejs'
 export const dynamic='force-dynamic'
@@ -19,7 +19,7 @@ export async function POST(request:Request){
  if(!provisioningEnabled())
   return NextResponse.json({ok:false,reason:'not_enabled'},{status:503,headers})
  try{
-  const body=await request.json()
+  const body=await readBoundedProvisioningJson(request)
   const {organizationId,protocolId}=validateProvisioningBody(body)
   if(!UUID.test(body.sessionId)||typeof body.nonce!=='string'||!/^[-_A-Za-z0-9]{43}$/.test(body.nonce)||
      typeof body.authorizationCode!=='string'||body.authorizationCode.length<12||body.authorizationCode.length>4096||
