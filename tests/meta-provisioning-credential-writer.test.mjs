@@ -15,7 +15,7 @@ function mock({role='proxy_credential_writer_login',phase='authorization_receive
    if(sql.includes('from pg_roles'))return {rows:[{name:role,rolsuper:false,rolbypassrls:false,rolcreaterole:false}]}
    if(sql.includes('has_table_privilege'))return {rows:[{vault_insert:true,vault_read:false,vault_update:false,vault_delete:false}]}
    if(sql.includes('from proxy_control.whatsapp_provisioning where'))return {rows:[{id:'b1111111-1111-4111-8111-111111111111',phase,operator_id:operatorId,waba_id:null,phone_number_id:null,meta_app_id:null}]}
-   if(sql.includes('from proxy_control.whatsapp_authorization_sessions'))return {rows:session?[{'?column?':1}]:[]}
+   if(sql.includes('update proxy_control.whatsapp_authorization_sessions'))return {rows:session?[{id:'a1111111-1111-4111-8111-111111111111'}]:[]}
    if(sql.includes('insert into proxy_control.whatsapp_credential_envelopes'))return {rows:insert?[{provisioning_id:'b1111111-1111-4111-8111-111111111111'}]:[]}
    if(sql.includes('update proxy_control.whatsapp_provisioning set'))return {rows:[{id:'b1111111-1111-4111-8111-111111111111'}]}
    return {rows:[]}
@@ -23,7 +23,7 @@ function mock({role='proxy_credential_writer_login',phase='authorization_receive
  }
  return {calls,pool:{async connect(){return db}}}
 }
-const args={identity,accessToken,grantedScopes:scopes,operatorId}
+const args={identity,accessToken,grantedScopes:scopes,operatorId,sessionId:'a1111111-1111-4111-8111-111111111111',nonce:'b'.repeat(43)}
 test('credential is sealed and transactional, no plaintext into SQL or audit',async()=>{
  const h=mock()
  const writer=createCredentialWriter({pool:h.pool,expectedAppId:identity.appId,rootKeyHex})
@@ -31,8 +31,13 @@ test('credential is sealed and transactional, no plaintext into SQL or audit',as
  assert.equal(result.stored,true)
  assert.equal(result.fingerprint.length,16)
  assert.ok(!JSON.stringify(h.calls).includes(accessToken))
+ assert.ok(!JSON.stringify(h.calls).includes(args.nonce))
+ const consumed=h.calls.find(x=>x.sql.includes('update proxy_control.whatsapp_authorization_sessions'))
+ assert.ok(consumed.sql.includes('consumed_at is null'))
+ assert.ok(consumed.sql.includes('expires_at>now()'))
  const sql=h.calls.map(x=>x.sql)
  assert.ok(sql.includes('begin')&&sql.includes('commit'))
+ assert.ok(sql.findIndex(x=>x.includes('update proxy_control.whatsapp_authorization_sessions'))<sql.findIndex(x=>x.includes('insert into proxy_control.whatsapp_credential_envelopes')))
  assert.ok(sql.findIndex(x=>x.includes("set_config('app.organization_id'"))<sql.findIndex(x=>x.includes('whatsapp_provisioning where')))
  assert.equal(h.calls.find(x=>x.sql.includes('insert into proxy_control.whatsapp_credential_envelopes')).values[7],result.fingerprint)
 })
