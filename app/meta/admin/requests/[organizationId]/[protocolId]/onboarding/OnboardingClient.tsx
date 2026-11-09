@@ -32,7 +32,9 @@ export default function OnboardingClient({organizationId,protocolId}:{
  const completingRef=useRef(false)
 
  async function finalizeIfReady(){
-  const permit=permitRef.current,asset=assetRef.current,code=codeRef.current
+  const permit=permitRef.current,code=codeRef.current
+  const asset=assetRef.current||(permit?.expectedWabaId&&permit?.expectedPhoneNumberId?
+   {wabaId:permit.expectedWabaId,phoneNumberId:permit.expectedPhoneNumberId}:null)
   if(!permit||!asset||!code||completingRef.current)return
   if(Date.now()>=new Date(permit.expiresAt).getTime()){
    codeRef.current=''
@@ -85,9 +87,10 @@ export default function OnboardingClient({organizationId,protocolId}:{
    try{payload=typeof event.data==='string'?JSON.parse(event.data):event.data}catch{return}
    if(payload?.type!=='WA_EMBEDDED_SIGNUP')return
    if(!['FINISH','FINISH_ONLY_WABA','FINISH_WHATSAPP_BUSINESS_APP_ONBOARDING'].includes(payload.event||''))return
-   const d=payload.data||{}
+   const d=payload.data&&typeof payload.data==='object'?payload.data:{}
    const wabaId=safeId(d.waba_id)||safeId(d.wabaId)
-   const phoneNumberId=safeId(d.phone_number_id)||safeId(d.phoneNumberId)
+   const phoneNumberId=safeId(d.phone_number_id)||safeId(d.phoneNumberId)||
+    (permitRef.current?.expectedPhoneNumberId||'')
    if(!wabaId||!phoneNumberId)return
    const asset={wabaId,phoneNumberId}
    assetRef.current=asset
@@ -145,7 +148,7 @@ export default function OnboardingClient({organizationId,protocolId}:{
    const code=response.authResponse?.code?.trim()||''
    if(code){
     codeRef.current=code
-    setNotice('Autorização recebida. Aguardando IDs oficiais da Meta para confrontar com o protocolo...')
+    setNotice('Autorização recebida. Validando ativos e acesso pela Meta antes de armazenar...')
     void finalizeIfReady()
    }else{
     setPhase('failed')
