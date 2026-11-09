@@ -1,7 +1,7 @@
 import {NextResponse} from 'next/server'
 import {currentPlatformAdmin} from '@/lib/meta-admin/auth'
 import {getAdminConfig} from '@/lib/meta-admin/policy.mjs'
-import {getProvisioningStore,provisioningEnabled} from '@/lib/meta-provisioning/runtime.mjs'
+import {getProvisioningStore,provisioningEnabled,verifyProvisioningInfrastructure} from '@/lib/meta-provisioning/runtime.mjs'
 import {verifyProvisioningPost,validateProvisioningBody} from '@/lib/meta-provisioning/admin-request-policy.mjs'
 export const runtime='nodejs'
 export const dynamic='force-dynamic'
@@ -19,12 +19,13 @@ export async function POST(request:Request){
  try{
   const body=await request.json()
   const {organizationId,protocolId}=validateProvisioningBody(body)
+  await verifyProvisioningInfrastructure()
   const store=getProvisioningStore()
   await store.beginFromReceipt({organizationId,protocolId,operatorId})
   const issued=await store.issueAuthorization({organizationId,protocolId,operatorId})
   return NextResponse.json({ok:true,sessionId:issued.sessionId,nonce:issued.nonce,
    expiresAt:issued.expiresAt,
-   configurationId:process.env.PROXY_META_COEXISTENCE_CONFIG_ID||'3237839906603757',
+   configurationId:process.env.PROXY_META_COEXISTENCE_CONFIG_ID,
    appId:process.env.META_APP_ID||'1952034255371331'},
    {headers})
  }catch{
