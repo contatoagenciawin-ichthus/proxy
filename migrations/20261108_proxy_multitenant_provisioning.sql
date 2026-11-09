@@ -66,6 +66,11 @@ CREATE TABLE proxy_control.whatsapp_authorization_sessions (
 );
 CREATE INDEX provisioning_org_phase_idx
  ON proxy_control.whatsapp_provisioning(organization_id,phase);
+-- A phone may only be provisioned to one non-revoked connection globally.
+-- WABAs may still contain multiple phone numbers and be shared as allowed.
+CREATE UNIQUE INDEX provisioning_phone_active_unique_idx
+ ON proxy_control.whatsapp_provisioning(phone_number_id)
+ WHERE phone_number_id IS NOT NULL AND phase<>'revoked';
 CREATE INDEX provisioning_events_org_recorded_idx
  ON proxy_control.whatsapp_provisioning_events(organization_id,recorded_at DESC);
 CREATE INDEX authorization_sessions_active_idx
