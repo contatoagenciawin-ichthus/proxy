@@ -31,6 +31,7 @@ export default async function RequestDetail({params}:{
      </dl>
      <p>Responsável, pendências, Business Portfolio, WABA, Phone Number ID e testes operacionais: ainda não registrados neste protocolo.</p>
      <p>O protocolo foi recebido pela Proxy. A autorização da Meta e o provisionamento do número permanecem como etapas posteriores do onboarding assistido.</p>
+     {process.env.PROXY_PROVISIONING_ENABLED==='true'&&<p><Link href={`/meta/admin/requests/${row.organizationId}/${row.protocolId}/onboarding`}>Abrir onboarding assistido vinculado ao protocolo</Link></p>}
    </section>}
  </main>
 }
