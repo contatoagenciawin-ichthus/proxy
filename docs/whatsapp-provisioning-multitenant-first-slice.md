@@ -57,3 +57,39 @@ Nenhuma operação Meta, alteração de assinatura, mudança no webhook global,
 reconfiguração da LA/Eduardo, nova IA, migração de número, mudanças na Vercel
 ou gravação no Neon. Esta branch entrega somente o cofre criptográfico e
 contratos de provisionamento que habilitam a próxima integração segura.
+
+
+## Incremento seguinte — 09/11/2026
+- Store transacional `lib/meta-provisioning/provisioning-store.mjs`:
+  recebe somente recibos reais, trava identificação de operador, emite sessão OAuth
+  de uso único com nonce apenas hasheado no banco e validade de dez minutos.
+  WABA e Phone Number ID esperados são opcionais para futuros tenants; quando
+  informados, o retorno precisa coincidir.
+- Writer isolado `lib/meta-provisioning/credential-writer.mjs`:
+  recebe token apenas de fluxo Graph validado, verifica consentimento consumido,
+  autentica organização, protocolo, operador e ativos, insere envelope cifrado,
+  atualiza fase e audita fingerprint em uma transação.
+- Definidas permissões mínimas de roles no SQL separado
+  `migrations/20261109_proxy_provisioning_role_grants.sql` (NÃO aplicado).
+  O runtime deve ser incapaz de ler/inserir envelopes. O writer pode somente
+  inserir envelopes, sem SELECT/UPDATE/DELETE.
+- Github Actions `.github/workflows/meta-provisioning-verify.yml` executa
+  testes de isolamento, rejeição de escalada e criptografia. CI passou em
+  `2955e0cf7e3e4cf76a3bc84c4836895e0f0d6cbc`.
+- Migração base foi validada em branch temporária Neon
+  `br-wild-haze-b59o0cgk` por preparação da ferramenta. Essa branch está
+  isolada da produção. Após esse teste, a DDL foi refinada para permitir
+  descoberta de WABA/número sem IDs prévios; requer revalidação antes de aplicar.
+- Ainda NÃO implementado: callback OAuth autenticado com a sessão GitHub
+  real, Graph client que valida token/escopos/negócio, endpoint interno de
+  uso do cofre e diagnóstico baseado na credencial, comunicação de estados ao
+  CRM, atribuição e auditoria operacional final.
+- Nenhuma migração em produção, role ou secret de runtime habilitado,
+  deploy de onboarding novo ou acesso a WABA atual. Esta entrega **não ativa
+  o WhatsApp do CRM**.
+
+## Aprovação de produção
+Para aplicar migrations, criar roles dedicadas e provisionar a chave de
+criptografia de plataforma, é necessária revisão de segurança e aprovação
+operacional explícita. Não pedir credenciais por chat nem provisionar
+valores por cliente na Vercel.
