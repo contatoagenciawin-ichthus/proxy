@@ -32,7 +32,7 @@ export async function POST(request:Request){
    sessionId:body.sessionId,nonce:body.nonce,
    authorizationCode:body.authorizationCode,wabaId:body.wabaId,phoneNumberId:body.phoneNumberId,
    store,writer,appId:process.env.META_APP_ID||'1952034255371331',
-   appSecret:process.env.META_APP_SECRET,
+   appSecret:process.env.META_APP_SECRET||'',
    version:process.env.META_GRAPH_VERSION||'v26.0'
   })
   return NextResponse.json({ok:true,stored:result.stored,
