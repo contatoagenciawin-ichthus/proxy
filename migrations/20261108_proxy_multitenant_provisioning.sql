@@ -60,7 +60,21 @@ CREATE TABLE IF NOT EXISTS proxy_control.whatsapp_authorization_sessions (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   provisioning_id uuid NOT NULL,
   organization_id uuid NOT NULL,
-  operator_id text NOT NULL CHECK (operator_id ~ '^[A-Za-z0-9_-]{3,128}
+  operator_id text NOT NULL CHECK (length(operator_id) BETWEEN 3 AND 128),
+  nonce_digest char(64) NOT NULL CHECK (length(nonce_digest)=64),
+  expected_waba_id text NOT NULL,
+  expected_phone_number_id text NOT NULL,
+  expected_app_id text NOT NULL,
+  issued_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL,
+  consumed_at timestamptz,
+  CONSTRAINT authorization_tenant_fk FOREIGN KEY (provisioning_id,organization_id)
+   REFERENCES proxy_control.whatsapp_provisioning(id,organization_id),
+  CHECK (expires_at > issued_at),
+  UNIQUE (organization_id,nonce_digest)
+);
+
+CREATE INDEX IF NOT EXISTS whatsapp_provisioning_org_phase_idx
  ON proxy_control.whatsapp_provisioning(organization_id,phase);
 CREATE INDEX IF NOT EXISTS whatsapp_provisioning_events_org_recorded_idx
  ON proxy_control.whatsapp_provisioning_events(organization_id,recorded_at DESC);
@@ -84,6 +98,10 @@ CREATE POLICY envelopes_tenant_scope ON proxy_control.whatsapp_credential_envelo
  FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
  WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
 CREATE POLICY events_tenant_scope ON proxy_control.whatsapp_provisioning_events
+ FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
+ WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
+
+CREATE POLICY authorization_sessions_tenant_scope ON proxy_control.whatsapp_authorization_sessions
  FOR ALL USING (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid)
  WITH CHECK (organization_id = nullif(current_setting('app.organization_id',true),'')::uuid);
 
