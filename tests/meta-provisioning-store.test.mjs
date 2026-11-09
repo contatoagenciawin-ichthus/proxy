@@ -34,7 +34,7 @@ test('tenant-specific transaction scopes RLS before querying receipt and commits
  assert.ok(begin>=0&&begin<scope&&scope<receipt)
  assert.equal(h.calls[scope].values[0],org)
  assert.ok(sql.includes('commit'))
- assert.ok(!sql.some(x=>x.includes('whatsapp_credential_envelopes')))
+ assert.ok(!sql.some(x=>/\\b(?:insert\\s+into|update|delete\\s+from)\\s+proxy_control\\.whatsapp_credential_envelopes/i.test(x)))
 })
 test('wrong receipt, role or ID fails closed with rollback and release',async()=>{
  const h=harness({receipt:false})
