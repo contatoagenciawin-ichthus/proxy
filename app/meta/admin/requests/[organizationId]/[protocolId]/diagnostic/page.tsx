@@ -9,7 +9,7 @@ export const dynamic='force-dynamic'
 const ICHTHUS_ORG='e9b935b6-3349-4b2c-970d-be8ad3bc243d'
 const ICHTHUS_WABA='107697061976892'
 const ICHTHUS_PHONE='107612478652254'
-const labels=[['waba','WABA'],['phone','Número WhatsApp'],['subscription','Aplicativo inscrito'],['callback','Callback exclusivo da WABA']] as const
+const labels=[['waba','WABA'],['phone','Número WhatsApp'],['subscription','Aplicativo inscrito'],['callback','Callback exclusivo da WABA'],['phoneOverride','Callback específico do número (prioritário)']] as const
 const statuses:Record<string,string>={verified:'Verificado',not_found:'Não encontrado',inconclusive:'Inconclusivo',blocked:'Bloqueado',error:'Erro',no_access:'Sem acesso'}
 
 export default async function IchthusDiagnostic({params}:{params:Promise<{organizationId:string,protocolId:string}>}){
