@@ -40,7 +40,7 @@ function fakeGraph(log){
   assert.equal(options.method,'GET')
   assert.equal(options.headers.Authorization,'Bearer '+token)
   if(url.includes('/phone_numbers?'))return response({data:[{id:phoneNumberId}]})
-  if(url.includes(phoneNumberId+'?fields=webhook_configuration'))return response({webhook_configuration:{override_callback_uri:'https://phone.example.test/webhook'}})
+  if(url.includes(phoneNumberId+'?fields=webhook_configuration'))return response({webhook_configuration:{phone_number:{override_callback_uri:'https://phone.example.test/webhook'},whatsapp_business_account:{override_callback_uri:'https://waba.example.test/webhook'},application:{callback_url:'https://default.example.test/webhook'}}})
   if(url.includes('/subscribed_apps?'))return response({data:[{whatsapp_business_api_data:{id:appId},override_callback_uri:'https://app.proxyone.tech/api/meta/ichthus/whatsapp/webhook'}]})
   return response({id:wabaId})
  }
@@ -55,6 +55,7 @@ test('read-only reader checks scope, accesses encrypted vault, then queries only
  assert.ok(queries.some(x=>x.sql.includes("set_config('app.organization_id'")&&x.params[0]===organizationId))
  assert.ok(queries.some(x=>x.sql==='commit'))
  assert.equal(calls.length,4)
+ assert.equal(result.checks.phoneOverride.detail,'https://phone.example.test/webhook')
  assert.ok(calls.every(x=>x.options.method==='GET'))
  assert.ok(!JSON.stringify(result).includes(token))
  assert.ok(!JSON.stringify(result).includes(envelope.ciphertext))
