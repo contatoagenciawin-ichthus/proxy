@@ -32,6 +32,7 @@ export default async function RequestDetail({params}:{
      <p>Responsável, pendências, Business Portfolio, WABA, Phone Number ID e testes operacionais: ainda não registrados neste protocolo.</p>
      <p>O protocolo foi recebido pela Proxy. A autorização da Meta e o provisionamento do número permanecem como etapas posteriores do onboarding assistido.</p>
      {process.env.PROXY_PROVISIONING_ENABLED==='true'&&<p><Link href={`/meta/admin/requests/${row.organizationId}/${row.protocolId}/onboarding`}>Abrir onboarding assistido vinculado ao protocolo</Link></p>}
+     {row.organizationId==='e9b935b6-3349-4b2c-970d-be8ad3bc243d'&&process.env.PROXY_ICHTHUS_META_DIAGNOSTIC_ENABLED==='true'&&<p><Link href={`/meta/admin/requests/${row.organizationId}/${row.protocolId}/diagnostic`}>Consultar assinatura Meta da Ichthus (somente leitura)</Link></p>}
    </section>}
  </main>
 }
