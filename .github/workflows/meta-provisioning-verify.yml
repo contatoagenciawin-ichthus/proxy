@@ -4,6 +4,8 @@ on:
     paths:
       - 'lib/meta-provisioning/**'
       - 'tests/meta-provisioning-*.test.mjs'
+      - 'tests/meta-vault-reader.test.mjs'
+      - 'migrations/20261110_proxy_credential_reader_grants.sql'
       - 'migrations/20261108_proxy_multitenant_provisioning.sql'
       - '.github/workflows/meta-provisioning-verify.yml'
   workflow_dispatch:
@@ -19,6 +21,6 @@ jobs:
           node-version: '22'
       - name: Check JavaScript module syntax
         run: |
-          for f in lib/meta-provisioning/*.mjs tests/meta-provisioning-*.test.mjs; do node --check "$f"; done
+          for f in lib/meta-provisioning/*.mjs tests/meta-provisioning-*.test.mjs tests/meta-vault-reader.test.mjs; do node --check "$f"; done
       - name: Run deterministic security tests
-        run: node --test tests/meta-provisioning-*.test.mjs
+        run: node --test tests/meta-provisioning-*.test.mjs tests/meta-vault-reader.test.mjs
