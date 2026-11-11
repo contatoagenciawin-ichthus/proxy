@@ -161,3 +161,33 @@ test('invalid or redirected webhook handshake prevents all Meta mutations',async
  assert.equal(r.status,'blocked')
  assert.equal(posts.length,0)
 })
+
+test('human reply sends exact text from sealed vault without returning token',async()=>{
+ const {pool}=fakeDb(),calls=[];
+ const diagnostic=createVaultDiagnostic({pool,rootKeyHex,appId,fetchFn:async(url,opts)=>{
+  calls.push({url,opts});
+  return response({messages:[{id:'wamid.HBgLMTIz'}]});
+ }});
+ const sent=await diagnostic.sendIchthusText({...args,recipient:'5511999000000',body:'Olá, podemos ajudar?'});
+ assert.equal(sent.status,'accepted');
+ assert.equal(sent.providerMessageId,'wamid.HBgLMTIz');
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].url,'https://graph.facebook.com/v26.0/'+phoneNumberId+'/messages');
+ const data=JSON.parse(calls[0].opts.body);
+ assert.deepEqual(data,{messaging_product:'whatsapp',recipient_type:'individual',
+  to:'5511999000000',type:'text',text:{preview_url:false,body:'Olá, podemos ajudar?'}});
+ assert.equal(calls[0].opts.headers.Authorization,'Bearer '+token);
+ assert.equal(JSON.stringify(sent).includes(token),false);
+});
+test('outbound refuses unrelated WABA and numbers before token decryption',async()=>{
+ const {pool,queries}=fakeDb();
+ const diag=createVaultDiagnostic({pool,rootKeyHex,appId,fetchFn:async()=>{throw Error('unexpected')}});
+ await assert.rejects(diag.sendIchthusText({...args,phoneNumberId:'123456789',recipient:'5511999000000',body:'Oi'}),/send_invalid_scope/);
+ assert.equal(queries.length,0);
+});
+test('Meta transport failures report uncertain rather than false delivery',async()=>{
+ const {pool}=fakeDb();
+ const diag=createVaultDiagnostic({pool,rootKeyHex,appId,fetchFn:async()=>{throw Error('timeout')}});
+ const result=await diag.sendIchthusText({...args,recipient:'5511999000000',body:'Oi'});
+ assert.equal(result.status,'uncertain');
+});
