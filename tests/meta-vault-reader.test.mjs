@@ -88,3 +88,76 @@ test('not finding the app does not imply a callback override exists',async()=>{
  assert.equal(r.checks.subscription.status,'not_found')
  assert.equal(r.checks.callback.status,'blocked')
 })
+
+test('WABA override subscription performs only a scoped POST with override after endpoint verification',async()=>{
+ const {pool}=fakeDb()
+ const callbackUrl='https://app.proxyone.tech/api/meta/ichthus/whatsapp/webhook'
+ const verifyToken='verification-token-for-ichthus-opaque-0001'
+ let subscribed=false
+ const calls=[]
+ const fetchFn=async (url,options)=>{
+  calls.push({url,method:options.method,body:options.body})
+  if(url.startsWith(callbackUrl+'?')){
+   const u=new URL(url)
+   assert.equal(u.searchParams.get('hub.verify_token'),verifyToken)
+   return {ok:true,text:async()=>u.searchParams.get('hub.challenge')}
+  }
+  assert.equal(options.headers.Authorization,'Bearer '+token)
+  if(url.includes('/subscribed_apps')&&options.method==='POST'){
+   assert.deepEqual(JSON.parse(options.body),{override_callback_uri:callbackUrl,verify_token:verifyToken})
+   subscribed=true
+   return response({success:true})
+  }
+  if(url.includes('/subscribed_apps'))return response({data:subscribed?[{whatsapp_business_api_data:{id:appId},override_callback_uri:callbackUrl}]:[]})
+  if(url.includes('/phone_numbers?'))return response({data:[{id:phoneNumberId}]})
+  if(url.includes('?fields=webhook_configuration'))return response({webhook_configuration:{}})
+  return response({id:wabaId})
+ }
+ const client=createVaultDiagnostic({pool,rootKeyHex,appId,fetchFn})
+ const r=await client.subscribeIchthusOverride({...args,callbackUrl,verifyToken})
+ assert.equal(r.status,'verified')
+ const posts=calls.filter(x=>x.method==='POST')
+ assert.equal(posts.length,1)
+ assert.equal(posts[0].url,'https://graph.facebook.com/v26.0/'+wabaId+'/subscribed_apps')
+ assert.ok(!JSON.stringify(r).includes(token))
+ assert.ok(!JSON.stringify(r).includes(verifyToken))
+})
+test('Meta refusal never triggers generic fallback subscription',async()=>{
+ const {pool}=fakeDb()
+ const callbackUrl='https://app.proxyone.tech/api/meta/ichthus/whatsapp/webhook'
+ const verifyToken='verification-token-for-ichthus-opaque-0001'
+ const posts=[]
+ const fetchFn=async(url,options)=>{
+  if(url.startsWith(callbackUrl+'?'))return {ok:true,text:async()=>new URL(url).searchParams.get('hub.challenge')}
+  if(options.method==='POST'){
+   posts.push(options.body)
+   return response({error:{code:100,message:'Subscribe first'}},400)
+  }
+  if(url.includes('/subscribed_apps'))return response({data:[]})
+  if(url.includes('/phone_numbers?'))return response({data:[{id:phoneNumberId}]})
+  if(url.includes('webhook_configuration'))return response({webhook_configuration:{}})
+  return response({id:wabaId})
+ }
+ const client=createVaultDiagnostic({pool,rootKeyHex,appId,fetchFn})
+ const r=await client.subscribeIchthusOverride({...args,callbackUrl,verifyToken})
+ assert.equal(r.status,'blocked')
+ assert.equal(posts.length,1)
+ assert.ok(JSON.parse(posts[0]).override_callback_uri)
+})
+test('invalid or redirected webhook handshake prevents all Meta mutations',async()=>{
+ const {pool}=fakeDb(),posts=[]
+ const fetchFn=async(url,options)=>{
+  if(url.startsWith('https://app.proxyone.tech/'))return {ok:false,text:async()=>''}
+  if(options.method==='POST')posts.push(url)
+  if(url.includes('/subscribed_apps'))return response({data:[]})
+  if(url.includes('/phone_numbers?'))return response({data:[{id:phoneNumberId}]})
+  if(url.includes('webhook_configuration'))return response({webhook_configuration:{}})
+  return response({id:wabaId})
+ }
+ const client=createVaultDiagnostic({pool,rootKeyHex,appId,fetchFn})
+ const r=await client.subscribeIchthusOverride({...args,
+  callbackUrl:'https://app.proxyone.tech/api/meta/ichthus/whatsapp/webhook',
+  verifyToken:'verification-token-for-ichthus-opaque-0001'})
+ assert.equal(r.status,'blocked')
+ assert.equal(posts.length,0)
+})
