@@ -23,22 +23,22 @@ export default async function AdminOverview() {
     </section>
     <div className="pa-section-title"><h2>WhatsApp Business Platform</h2><span>3 organizações · evidências atualizadas em 11/11/2026</span></div>
     <div className="pa-table-wrap"><table><caption className="pa-sr">Clientes e situação documentada de suas integrações WhatsApp</caption><thead><tr><th>Cliente / produto</th><th>Canal</th><th>Situação registrada</th><th>Evidência / monitoramento</th><th><span className="pa-sr">Detalhes</span></th></tr></thead><tbody>
-      {connections.map(c => <tr key={c.id}><td><div className="pa-client"><span className="pa-avatar">{c.initials}</span><div><strong>{c.name}</strong><small>{c.product}</small></div></div></td><td><span>{c.number || 'Número não conferido'}</span><small>WhatsApp Business</small></td><td><span className={`pa-badge ${c.stageKind === 'pending' ? 'pa-badge-pending' : ''}`}>{c.stage}</span></td><td><span className="pa-muted">{c.id==='ichthus'&&ichthusTelemetry.state==='available'?`Eventos consultados · ${new Date(lastTelemetry.observedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}`:c.verification || 'Sem diagnóstico ao vivo'}</span></td><td><Link className="pa-detail-link" href={`/meta/admin/connections/${c.id}`} aria-label={`Ver conexão de ${c.name}`}>Ver ficha <span aria-hidden="true">↗</span></Link></td></tr>)}
+      {connections.map(c => <tr key={c.id}><td><div className="pa-client"><span className="pa-avatar">{c.initials}</span><div><strong>{c.name}</strong><small>{c.product}</small></div></div></td><td><span>{c.number || 'Número não conferido'}</span><small>WhatsApp Business</small></td><td><span className={`pa-badge ${c.stageKind === 'pending' ? 'pa-badge-pending' : ''}`}>{c.stage}</span></td><td><span className="pa-muted">{c.id==='ichthus'&&ichthusTelemetry.state==='available'?`Eventos consultados · ${new Date(lastTelemetry?.observedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}`:('verification' in c ? c.verification : null) || 'Sem diagnóstico ao vivo'}</span></td><td><Link className="pa-detail-link" href={`/meta/admin/connections/${c.id}`} aria-label={`Ver conexão de ${c.name}`}>Ver ficha <span aria-hidden="true">↗</span></Link></td></tr>)}
     </tbody></table></div>
     <section className="pa-note" aria-label="Telemetria operacional Ichthus">
       <h2>Telemetria operacional · Ichthus</h2>
       <p>Consulta sob demanda aos metadados do CRM, sem conteúdo de mensagens. Não equivale a teste da Graph API nem comprova disponibilidade contínua.</p>
       {ichthusTelemetry.state==='available'?<dl className="pa-diagnostics">
         {[
-          ['Última mensagem recebida',lastTelemetry.lastInboundAt],
-          ['Último envio humano pelo CRM',lastTelemetry.lastCrmOutboundAt],
-          ['Último envio pelo aplicativo',lastTelemetry.lastBusinessAppEchoAt],
-          ['Última confirmação de entrega',lastTelemetry.lastDeliveredAt],
-          ['Última confirmação de leitura',lastTelemetry.lastReadAt],
-          ['Última falha de entrega',lastTelemetry.lastFailedAt]
+          ['Última mensagem recebida',lastTelemetry?.lastInboundAt],
+          ['Último envio humano pelo CRM',lastTelemetry?.lastCrmOutboundAt],
+          ['Último envio pelo aplicativo',lastTelemetry?.lastBusinessAppEchoAt],
+          ['Última confirmação de entrega',lastTelemetry?.lastDeliveredAt],
+          ['Última confirmação de leitura',lastTelemetry?.lastReadAt],
+          ['Última falha de entrega',lastTelemetry?.lastFailedAt]
         ].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value?new Date(value).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'Sem evento registrado'}</dd></div>)}
-        <div><dt>Falhas de entrega nas últimas 24h</dt><dd>{lastTelemetry.deliveryFailures24h}</dd></div>
-        <div><dt>Mensagens recebidas nas últimas 24h</dt><dd>{lastTelemetry.inboundEvents24h}</dd></div>
+        <div><dt>Falhas de entrega nas últimas 24h</dt><dd>{lastTelemetry?.deliveryFailures24h}</dd></div>
+        <div><dt>Mensagens recebidas nas últimas 24h</dt><dd>{lastTelemetry?.inboundEvents24h}</dd></div>
       </dl>:<p role="status">Telemetria atual {ichthusTelemetry.state==='disabled'?'não habilitada':ichthusTelemetry.state==='unconfigured'?'não configurada':'indisponível'}. O marco de homologação permanece válido, mas a saúde atual não foi verificada.</p>}
     </section>
     <section className="pa-quick-access" aria-labelledby="meta-ads-access">
