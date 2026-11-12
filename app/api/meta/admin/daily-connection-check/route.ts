@@ -9,13 +9,14 @@ export async function GET(request:Request){
   return Response.json({ok:false,error:'unauthorized'},{status:401,headers:{'Cache-Control':'no-store'}})
  try{
   const reader=getConnectionAdminReader()
+  if(!reader)throw Error('daily_check_reader_unavailable')
   const writer=getProvisioningStore()
   const diagnostic=getVaultDiagnostic()
   const result=await executeDailyCheck({
    readPrevious:(org:string,phone:string)=>reader.readDailyConnectionCheck(org,phone),
    diagnose:(params:any)=>diagnostic.check(params),
    persist:(params:any)=>writer.writeDailyConnectionCheck(params)
-  })
+  } as any)
   return Response.json({ok:true,...result},{headers:{'Cache-Control':'no-store'}})
  }catch{
   return Response.json({ok:false,error:'check_unavailable'},{status:503,headers:{'Cache-Control':'no-store'}})
