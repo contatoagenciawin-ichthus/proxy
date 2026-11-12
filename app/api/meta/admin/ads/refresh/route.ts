@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { currentPlatformAdmin } from "@/lib/meta-admin/auth"
 import { getMetaReviewConfig, MetaReviewError } from "@/lib/meta-review"
 import { readMetaAdsSession } from "@/lib/meta-ads-session"
+import {validateReportRequest,reportTimeRange} from "@/lib/meta-admin/ads-report-period.mjs"
 
 type AdAccount = {
   id: string
@@ -94,6 +95,7 @@ async function accountInsights(
   accountId: string,
   accessToken: string,
   stats: CallStats,
+  timeRange: string = "date_preset=last_30d",
 ) {
   const fields = [
     "account_id",
@@ -112,7 +114,7 @@ async function accountInsights(
 
   const payload = await monitoredGraphRequest<{ data?: InsightsRow[] }>(
     graphVersion,
-    `/${accountId}/insights?level=account&date_preset=last_30d&fields=${encodeURIComponent(fields)}&limit=1`,
+    `/${accountId}/insights?level=account&${timeRange}&fields=${encodeURIComponent(fields)}&limit=1`,
     accessToken,
     stats,
   )
@@ -145,7 +147,7 @@ async function campaignInsights(
 
   const payload = await monitoredGraphRequest<{ data?: InsightsRow[] }>(
     graphVersion,
-    `/${accountId}/insights?level=campaign&date_preset=last_30d&fields=${encodeURIComponent(fields)}&limit=50`,
+    `/${accountId}/insights?level=campaign&${timeRange}&fields=${encodeURIComponent(fields)}&limit=50`,
     accessToken,
     stats,
   )
@@ -153,11 +155,23 @@ async function campaignInsights(
   return payload.data || []
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   if (!(await currentPlatformAdmin())) {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 })
   }
 
+  let selection: {accountId:string;since:string;until:string}|null=null
+  try {
+    const raw = await request.text()
+    if (raw.length>512) return NextResponse.json({ok:false,error:"Requisição extensa."},{status:413})
+    if(raw.trim())selection=validateReportRequest(JSON.parse(raw))
+  }catch{
+    return NextResponse.json({ok:false,error:"Informe uma conta e um intervalo válido, de até 366 dias e sem datas futuras."},{status:400})
+  }
+  if(selection && request.headers.get("origin")!==new URL(request.url).origin){
+    return NextResponse.json({ok:false,error:"Origem não autorizada."},{status:403})
+  }
+  const timeRange=selection?reportTimeRange(selection):"date_preset=last_30d"
   const config = getMetaReviewConfig()
   const adsSession = await readMetaAdsSession()
   const accessToken = adsSession?.accessToken || ""
@@ -196,15 +210,19 @@ export async function POST() {
     )
 
     const accounts = accountsPayload.data || []
+    if(selection && !accounts.some(a=>a.id===selection.accountId))
+      return NextResponse.json({ok:false,error:"Conta não autorizada nesta sessão Meta."},{status:403})
+    const selectedAccounts=selection?accounts.filter(a=>a.id===selection.accountId):accounts
 
     const accountsWithInsights = await Promise.all(
-      accounts.map(async (account) => {
+      selectedAccounts.map(async (account) => {
         try {
           const insights = await accountInsights(
             config.graphVersion,
             account.id,
             accessToken,
             stats,
+            timeRange,
           )
           return { ...account, insights, insightsError: null as string | null }
         } catch (error) {
@@ -226,6 +244,7 @@ export async function POST() {
             account.id,
             accessToken,
             stats,
+            timeRange,
           )
           return [account.id, { data, error: null as string | null }] as const
         } catch (error) {
@@ -258,7 +277,7 @@ export async function POST() {
     return NextResponse.json({
       ok: true,
       completedAt: new Date().toISOString(),
-      period: "last_30d",
+      period: selection?{since:selection.since,until:selection.until}:"last_30d",
       primaryAccountId: primaryAccount?.id || null,
       adAccounts: accountsWithInsights,
       campaignInsightsByAccount,
