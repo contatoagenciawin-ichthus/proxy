@@ -4,12 +4,16 @@ import { currentPlatformAdmin } from '@/lib/meta-admin/auth'
 import { listConnections, inventorySummary } from '@/lib/meta-admin/inventory.mjs'
 import { logoutAdmin } from './actions'
 import {loadProviderConnectionRequests} from '@/lib/meta-admin/connection-requests-admin.mjs'
-import {readIchthusOperationalTelemetry} from '@/lib/meta-admin/ichthus-operational-telemetry.mjs'
+import {loadDailyConnectionStatus} from '@/lib/meta-admin/daily-connection-status.mjs'
 export default async function AdminOverview() {
   if (!(await currentPlatformAdmin())) redirect('/meta/admin/login')
   const connections = listConnections(), summary = inventorySummary()
-  const [inbound,ichthusTelemetry] = await Promise.all([loadProviderConnectionRequests(),readIchthusOperationalTelemetry()])
-  const lastTelemetry = ichthusTelemetry.snapshot
+  const [inbound,dailyStatus] = await Promise.all([loadProviderConnectionRequests(),loadDailyConnectionStatus()])
+  const lastCheck=dailyStatus.snapshot
+  const stateLabel=dailyStatus.state==='recent'&&lastCheck?.result==='confirmed'?'Metadados confirmados':
+    dailyStatus.state==='recent'&&lastCheck?.result==='attention'?'Atenção necessária':
+    dailyStatus.state==='recent'?'Verificação inconclusiva':
+    dailyStatus.state==='stale'?'Verificação desatualizada':'Verificação pendente'
   return <div className="pa-shell"><aside className="pa-sidebar"><div className="pa-wordmark">proxy<span>TECHNOLOGY</span></div>
     <p className="pa-nav-label">PLATAFORMA META</p><nav aria-label="Administração"><Link className="pa-nav-active" href="/meta/admin">Conexões <span>03</span></Link><Link href="/meta/admin/ads">Relatórios de tráfego <span>↗</span></Link></nav>
     <div className="pa-sidebar-bottom">Acesso da plataforma<br/><strong>Consulta administrativa</strong></div></aside>
@@ -19,28 +23,12 @@ export default async function AdminOverview() {
       <div><span>Clientes registrados</span><strong>{summary.registered.toString().padStart(2, '0')}</strong></div>
       <div><span>Produção informada</span><strong>{summary.productionReported.toString().padStart(2, '0')}</strong></div>
       <div><span>Operações validadas</span><strong>{summary.validated.toString().padStart(2, '0')}</strong></div>
-      <div><span>Telemetria consultada</span><strong>{ichthusTelemetry.state==='available'?'01':'—'}</strong><small>{ichthusTelemetry.state==='available'?'Ichthus · eventos do CRM':'Sem consulta atual disponível'}</small></div>
+      <div><span>Verificação diária</span><strong>{dailyStatus.state==='recent'?'01':'—'}</strong><small>{dailyStatus.state==='recent'?'Ichthus · última execução registrada':'Aguardando resultado recente'}</small></div>
     </section>
     <div className="pa-section-title"><h2>WhatsApp Business Platform</h2><span>3 organizações · evidências atualizadas em 11/11/2026</span></div>
     <div className="pa-table-wrap"><table><caption className="pa-sr">Clientes e situação documentada de suas integrações WhatsApp</caption><thead><tr><th>Cliente / produto</th><th>Canal</th><th>Situação registrada</th><th>Evidência / monitoramento</th><th><span className="pa-sr">Detalhes</span></th></tr></thead><tbody>
-      {connections.map(c => <tr key={c.id}><td><div className="pa-client"><span className="pa-avatar">{c.initials}</span><div><strong>{c.name}</strong><small>{c.product}</small></div></div></td><td><span>{c.number || 'Número não conferido'}</span><small>WhatsApp Business</small></td><td><span className={`pa-badge ${c.stageKind === 'pending' ? 'pa-badge-pending' : ''}`}>{c.stage}</span></td><td><span className="pa-muted">{c.id==='ichthus'&&ichthusTelemetry.state==='available'?`Eventos consultados · ${new Date(lastTelemetry?.observedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}`:('verification' in c ? c.verification : null) || 'Sem diagnóstico ao vivo'}</span></td><td><Link className="pa-detail-link" href={`/meta/admin/connections/${c.id}`} aria-label={`Ver conexão de ${c.name}`}>Ver ficha <span aria-hidden="true">↗</span></Link></td></tr>)}
+      {connections.map(c => <tr key={c.id}><td><div className="pa-client"><span className="pa-avatar">{c.initials}</span><div><strong>{c.name}</strong><small>{c.product}</small></div></div></td><td><span>{c.number || 'Número não conferido'}</span><small>WhatsApp Business</small></td><td><span className={`pa-badge ${c.stageKind === 'pending' ? 'pa-badge-pending' : ''}`}>{c.stage}</span></td><td><span className="pa-muted">{c.id==='ichthus'?`${stateLabel}${lastCheck?.checkedAt?' · '+new Date(lastCheck.checkedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):''}`:('verification' in c ? c.verification : null) || 'Sem verificação programada'}</span></td><td><Link className="pa-detail-link" href={`/meta/admin/connections/${c.id}`} aria-label={`Ver conexão de ${c.name}`}>Ver ficha <span aria-hidden="true">↗</span></Link></td></tr>)}
     </tbody></table></div>
-    <section className="pa-note" aria-label="Telemetria operacional Ichthus">
-      <h2>Telemetria operacional · Ichthus</h2>
-      <p>Consulta sob demanda aos metadados do CRM, sem conteúdo de mensagens. Não equivale a teste da Graph API nem comprova disponibilidade contínua.</p>
-      {ichthusTelemetry.state==='available'?<dl className="pa-diagnostics">
-        {[
-          ['Última mensagem recebida',lastTelemetry?.lastInboundAt],
-          ['Último envio humano pelo CRM',lastTelemetry?.lastCrmOutboundAt],
-          ['Último envio pelo aplicativo',lastTelemetry?.lastBusinessAppEchoAt],
-          ['Última confirmação de entrega',lastTelemetry?.lastDeliveredAt],
-          ['Última confirmação de leitura',lastTelemetry?.lastReadAt],
-          ['Última falha de entrega',lastTelemetry?.lastFailedAt]
-        ].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value?new Date(value).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'Sem evento registrado'}</dd></div>)}
-        <div><dt>Falhas de entrega nas últimas 24h</dt><dd>{lastTelemetry?.deliveryFailures24h}</dd></div>
-        <div><dt>Mensagens recebidas nas últimas 24h</dt><dd>{lastTelemetry?.inboundEvents24h}</dd></div>
-      </dl>:<p role="status">Telemetria atual {ichthusTelemetry.state==='disabled'?'não habilitada':ichthusTelemetry.state==='unconfigured'?'não configurada':'indisponível'}. O marco de homologação permanece válido, mas a saúde atual não foi verificada.</p>}
-    </section>
     <section className="pa-quick-access" aria-labelledby="meta-ads-access">
       <div><p className="pa-eyebrow">META ADS</p><h2 id="meta-ads-access">Relatórios de tráfego</h2><p>Centralize aqui o acesso aos relatórios obtidos pela Marketing API, sem precisar memorizar rotas técnicas de review.</p></div>
       <Link className="pa-button pa-button-link" href="/meta/admin/ads">Abrir central de relatórios <span aria-hidden="true">↗</span></Link>
@@ -64,7 +52,7 @@ export default async function AdminOverview() {
         </tr>)}</tbody>
       </table></div>}
     </section>
-    <section className="pa-note"><h2>Homologação não é monitoramento contínuo</h2><p>O piloto Ichthus foi validado por mensagens reais em 11/11/2026, incluindo confirmação de entrega pela Meta. Isso não constitui diagnóstico de saúde em tempo real. Eduardo Brasil e LA Climatização permanecem com produção informada, sem validação operacional equivalente neste inventário.</p></section>
+    <section className="pa-note"><h2>Homologação e verificação diária</h2><p>A Ichthus possui homologação funcional comprovada em 11/11/2026. Uma verificação automatizada de metadados da Meta está programada para uma execução por dia. A página apenas lê o último resultado salvo, sem consultar a Meta nem disparar mensagens. Ausência de eventos não significa desconexão. Eduardo Brasil e LA Climatização mantêm seus estados documentados.</p></section>
     <footer className="pa-footer"><span>Proxy gerencia as integrações. Cada CRM mantém seu próprio contexto.</span><span>Sem acesso a conversas ou credenciais</span></footer>
     </main></div></div>
 }

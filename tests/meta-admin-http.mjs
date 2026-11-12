@@ -41,7 +41,7 @@ await run('true', async () => {
   for (const client of ['eduardo-brasil', 'la-climatizacao']) {
     const page = await fetch(base+'/meta/admin/connections/'+client, {headers:{cookie:good}});
     assert.equal(page.status,200); const body=await page.text();
-    assert.ok(body.includes('Monitoramento do produto'));assert.ok(body.includes('Coleta desabilitada'));assert.ok(!body.includes('Diagnóstico local consultado'));
+    assert.ok(body.includes('Verificação programada'));assert.ok(body.includes('Sem verificação programada nesta fase'));assert.ok(!body.includes('Diagnóstico local consultado'));
   }
   assert.equal((await fetch(base+'/meta/admin/connections/not-a-client',{headers:{cookie:good}})).status,404);
   for(const cookie of [await sessionCookie('999'), good+'tampered', 'better-auth.session_token=tenant-admin']) {
