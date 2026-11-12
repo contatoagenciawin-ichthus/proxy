@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { ReportPeriodControls } from "./report-period-controls"
+import { analyzeCampaigns } from "@/lib/meta-admin/ads-report-analysis.mjs"
 
 const REVIEW_SESSION_KEY = "proxy_meta_ads_read_review"
 
@@ -30,6 +32,8 @@ type CampaignInsights = Insights & {
 }
 
 type ReviewSession = {
+  completedAt?: string
+  reportPeriodByAccount?: Record<string,{since:string;until:string;completedAt:string}>
   primaryAccountId?: string | null
   adAccounts?: Array<{
     id: string
@@ -321,6 +325,11 @@ export default function MetaClientReportPage() {
   const currency = account.currency || "BRL"
   const clientName = account.name || "Conta de anúncios"
   const accountFrequency = n(insights.frequency)
+  const analysis = analyzeCampaigns(campaigns,insights)
+  const dateLabel = insights.date_start && insights.date_stop
+    ? `${insights.date_start} a ${insights.date_stop}` : "Período não retornado pela Meta"
+  const periodType = session?.reportPeriodByAccount?.[account.id]
+  const fetchedAt = periodType?.completedAt || session?.completedAt
 
   const frequencyComment =
     accountFrequency >= 4
@@ -353,12 +362,14 @@ export default function MetaClientReportPage() {
           </div>
         </div>
 
+        <ReportPeriodControls key={account.id+dateLabel} accountId={account.id} insights={insights} />
+
         <header className="rounded-3xl border border-black/10 bg-white p-7 md:p-9">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#4f777f]">
             {clientName} · Relatório de tráfego Meta
           </p>
           <h1 className="mt-3 text-3xl font-semibold md:text-4xl">
-            Desempenho dos últimos 30 dias
+            Relatório de desempenho · {dateLabel}
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-6 text-[#63767a] md:text-base">
             Dados obtidos diretamente da Meta Marketing API, em modo somente
@@ -375,9 +386,10 @@ export default function MetaClientReportPage() {
               <strong>Período:</strong>{" "}
               {insights.date_start && insights.date_stop
                 ? insights.date_start + " a " + insights.date_stop
-                : "últimos 30 dias"}
+                : "período indisponível"}
             </p>
           </div>
+          <p className="mt-3 text-xs text-[#63767a]">Consulta dos dados: {fetchedAt?new Date(fetchedAt).toLocaleString("pt-BR"):"horário não informado"}. O mês ou ano no nome da campanha não determina o intervalo analisado.</p>
         </header>
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -545,6 +557,33 @@ export default function MetaClientReportPage() {
                   : "Não foi possível calcular a distribuição do investimento entre campanhas nesta sessão."
               }
             />
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-black/10 bg-white p-6 md:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.17em] text-[#698087]">DIAGNÓSTICO COMERCIAL POR CAMPANHA</p>
+          <h2 className="mt-2 text-2xl font-semibold">Eficiência e pontos de investigação</h2>
+          <p className="mt-3 text-sm leading-6 text-[#5d7075]">Parecer baseado exclusivamente nos dados atribuídos pela Meta no período selecionado. Não há inferência de vendas, agendamentos ou rentabilidade sem dados comerciais.</p>
+          <div className="mt-5 space-y-4">
+            {analysis.reports.map((item) => (
+              <article key={item.id||item.name} className="border border-[#dce5e6] bg-[#f8faf9] p-5">
+                <h3 className="font-semibold">{item.name}</h3>
+                <p className="mt-2 text-sm">Investimento: {money(item.spend,currency)} · Participação na verba das campanhas: {decimal(item.share)}% · CTR: {decimal(item.ctr)}% · Frequência: {decimal(item.frequency)}</p>
+                {item.action?<p className="mt-2 text-sm">Resultado atribuído: {integer(item.action.count)} {item.action.label}(s), custo calculado de {money(item.action.cost,currency)} por ocorrência.</p>:
+                  <p className="mt-2 text-sm">Resultado comercial não identificado nas ações devolvidas. Não equiparar cliques a leads.</p>}
+                {item.flags.length?<ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6">{item.flags.map((flag:string,i:number)=><li key={i}>{flag}</li>)}</ul>:
+                  <p className="mt-2 text-sm">Nenhum alerta baseado nos limiares aplicados. Ainda é necessário conferir conversões e qualidade comercial.</p>}
+              </article>
+            ))}
+            {!analysis.reports.length&&<p>Sem campanhas com resultados no intervalo selecionado.</p>}
+          </div>
+          {analysis.comparisons.length>0&&<div className="mt-5 space-y-2"><h3 className="font-semibold">Comparações de ações equivalentes</h3>
+            {analysis.comparisons.map((c:string,i:number)=><p key={i} className="text-sm leading-6">{c}</p>)}
+          </div>}
+          <div className="mt-5 border-t border-black/10 pt-4"><h3 className="font-semibold">Limites de interpretação</h3>
+            <ul className="mt-2 list-disc space-y-2 pl-5 text-sm leading-6">
+              {analysis.dataWarnings.map((w:string,i:number)=><li key={i}>{w}</li>)}
+            </ul>
           </div>
         </section>
 
