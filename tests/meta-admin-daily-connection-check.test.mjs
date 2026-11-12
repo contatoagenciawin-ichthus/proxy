@@ -10,8 +10,9 @@ test('cron endpoint requires exact bearer token',()=>{
  assert.equal(authorizedDailyCheck(new Request(request.url,{method:'POST',headers:{authorization:'Bearer '+secret}}),secret),false)
 })
 test('Meta verified identifiers are conservatively summarized',()=>{
- const ok={checks:{waba:{status:'verified'},phone:{status:'verified'},subscription:{status:'verified'},callback:{status:'verified'}}}
+ const ok={checks:{waba:{status:'verified'},phone:{status:'verified'},subscription:{status:'verified'},callback:{status:'verified',detail:'https://app.proxyone.tech/api/meta/ichthus/whatsapp/webhook'}}}
  assert.equal(summarizeMetaCheck(ok).result,'confirmed')
+ assert.equal(summarizeMetaCheck({...ok,checks:{...ok.checks,callback:{status:'verified',detail:'https://wrong.example.com/webhook'}}}).result,'inconclusive')
  assert.equal(summarizeMetaCheck({...ok,checks:{...ok.checks,callback:{status:'inconclusive'}}}).result,'inconclusive')
  assert.equal(summarizeMetaCheck({...ok,checks:{...ok.checks,subscription:{status:'not_found'}}}).result,'attention')
  assert.equal(summarizeMetaCheck(null).result,'inconclusive')
