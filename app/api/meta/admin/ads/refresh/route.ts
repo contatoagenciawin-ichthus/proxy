@@ -127,6 +127,7 @@ async function campaignInsights(
   accountId: string,
   accessToken: string,
   stats: CallStats,
+  timeRange: string = "date_preset=last_30d",
 ) {
   const fields = [
     "campaign_id",
