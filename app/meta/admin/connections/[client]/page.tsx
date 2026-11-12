@@ -2,37 +2,34 @@ import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { currentPlatformAdmin } from '@/lib/meta-admin/auth'
 import { findConnection } from '@/lib/meta-admin/inventory.mjs'
-import { getProductDiagnostic } from '@/lib/meta-admin/diagnostics.server'
-import { ProductDiagnostic } from './diagnostic'
-import { readIchthusOperationalTelemetry } from '@/lib/meta-admin/ichthus-operational-telemetry.mjs'
+import { loadDailyConnectionStatus } from '@/lib/meta-admin/daily-connection-status.mjs'
 export default async function ConnectionDetail({ params }: { params: Promise<{ client: string }> }) {
   if (!(await currentPlatformAdmin())) redirect('/meta/admin/login')
   const { client } = await params
   const record = findConnection(client)
   if (!record) notFound()
-  const [diagnostic,telemetry] = await Promise.all([getProductDiagnostic(client),client==='ichthus'?readIchthusOperationalTelemetry():Promise.resolve(null)])
+  const daily=client==='ichthus'?await loadDailyConnectionStatus():null
+  const checkpoint=daily?.snapshot
+  const latest=daily?.state==='recent'&&checkpoint?.result==='confirmed'?'Metadados Meta confirmados':
+   daily?.state==='recent'&&checkpoint?.result==='attention'?'Atenção necessária':
+   daily?.state==='recent'?'Verificação inconclusiva':
+   daily?.state==='stale'?'Registro desatualizado':'Primeira verificação pendente'
   const fields = [['Produto', record.product], ['Número', record.number], ['Business ID', record.businessId], ['WABA ID', record.wabaId], ['Phone Number ID', record.phoneNumberId], ['Meta App ID · referência', record.appId]]
   return <main className="pa-main pa-detail"><Link className="pa-detail-link" href="/meta/admin">← Todas as conexões</Link>
     <div className="pa-heading"><div><p className="pa-eyebrow">FICHA DA CONEXÃO</p><h1>{record.name}</h1><p className="pa-lead">{record.product}</p></div><span className={`pa-badge ${record.stageKind === 'pending' ? 'pa-badge-pending' : ''}`}>{record.stage}</span></div>
     <section aria-labelledby="assets"><h2 id="assets">Identificação dos ativos</h2><dl className="pa-fields">{fields.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value || 'Não conferido'}</dd></div>)}</dl></section>
-    <ProductDiagnostic result={diagnostic} />
-    {client==='ichthus'&&<section aria-label="Telemetria operacional do CRM Ichthus">
-      <div className="pa-section-title"><h2>Telemetria operacional</h2><span>{telemetry?.state==='available'?'Consulta atual ao CRM':'Consulta indisponível'}</span></div>
-      <p className="pa-lead">Somente metadados de eventos do CRM Ichthus. A ausência de tráfego não comprova falha da conexão. A consulta não acessa conversas, segredos ou tokens.</p>
-      {telemetry?.state==='available'&&telemetry.snapshot?<dl className="pa-diagnostics">
-        {[
-          ['Consulta realizada em',telemetry.snapshot.observedAt],
-          ['Última mensagem recebida',telemetry.snapshot.lastInboundAt],
-          ['Última resposta enviada pelo CRM',telemetry.snapshot.lastCrmOutboundAt],
-          ['Última mensagem do aplicativo',telemetry.snapshot.lastBusinessAppEchoAt],
-          ['Última entrega confirmada',telemetry.snapshot.lastDeliveredAt],
-          ['Última leitura confirmada',telemetry.snapshot.lastReadAt],
-          ['Última falha de entrega',telemetry.snapshot.lastFailedAt]
-        ].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value?new Date(value).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'Sem evento registrado'}</dd></div>)}
-        <div><dt>Falhas de entrega em 24h</dt><dd>{telemetry.snapshot.deliveryFailures24h}</dd></div>
-        <div><dt>Recebimentos em 24h</dt><dd>{telemetry.snapshot.inboundEvents24h}</dd></div>
-      </dl>:<p role="status" className="pa-lead">Não foi possível consultar metadados atuais ({telemetry?.state||'indisponível'}). Homologação histórica não significa saúde atual.</p>}
-    </section>}
+    <section aria-label="Verificação periódica da conexão">
+      <div className="pa-section-title"><h2>Verificação programada</h2><span>{client==='ichthus'?'1 vez ao dia':'Não configurada para este cliente'}</span></div>
+      {client==='ichthus'?<>
+        <p className="pa-lead">Resultado salvo da última consulta diária de metadados à Meta. Abrir esta página não inicia nova verificação, não envia mensagens nem consulta conversas.</p>
+        <dl className="pa-diagnostics">
+          <div><dt>Último resultado</dt><dd>{latest}</dd></div>
+          <div><dt>Data da verificação</dt><dd>{checkpoint?.checkedAt?new Date(checkpoint.checkedAt).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}):'Ainda não realizada'}</dd></div>
+          <div><dt>Homologação funcional</dt><dd>Validada em 11/11/2026</dd></div>
+        </dl>
+        <p className="pa-lead">Uma consulta inconclusiva não anula a homologação anterior. A confirmação dos metadados não equivale a testar entrega de mensagens.</p>
+      </>:<p className="pa-lead">Sem verificação programada nesta fase. A situação exibida é documental, não um diagnóstico em tempo real.</p>}
+    </section>
     <section><div className="pa-section-title"><h2>Referência do inventário</h2><span>Sem consulta em tempo real</span></div><dl className="pa-diagnostics">{[['Credencial operacional', record.credential], ['Assinatura / callback do webhook', record.webhook], ['Recebimento recente', record.inbound], ['Coexistência com o aplicativo', record.coexistence]].map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></section>
     <section><div className="pa-section-title"><h2>Evidências registradas</h2><span>Origem e data preservadas</span></div><ol className="pa-evidence">{record.evidence.map((e, i) => <li key={i}><div><time dateTime={e.date}>{e.date.split('-').reverse().join('/')}</time><span>{e.kind}</span></div><p>{e.text}</p></li>)}</ol></section>
     <section className="pa-note"><h2>Próxima verificação</h2><p>{record.next}</p></section>
