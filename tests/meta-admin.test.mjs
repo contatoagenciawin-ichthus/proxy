@@ -46,10 +46,18 @@ test('auth requests reject unapproved hosts and cross-origin requests', () => {
 test('inventory distinguishes reported production from live health and preserves source dates', () => {
   const records = listConnections();
   assert.equal(records.length, 3);
-  assert.deepEqual(inventorySummary(), { registered: 3, productionReported: 2, pending: 1, verifiedLive: 0 });
+  assert.deepEqual(inventorySummary(), { registered: 3, productionReported: 2, validated: 1, pending: 0, verifiedLive: 0 });
   for (const record of records) {
-    assert.equal(record.webhook, 'Não verificado');
-    assert.equal(record.credential, 'Não verificada');
+    if (record.id !== 'ichthus') {
+      assert.equal(record.webhook, 'Não verificado');
+      assert.equal(record.credential, 'Não verificada');
+    } else {
+      assert.equal(record.stage, 'Operação validada');
+      assert.equal(record.stageKind, 'validated');
+      assert.match(record.verification, /11\/11\/2026/);
+      assert.match(record.webhook, /saúde atual não monitorada/);
+      assert.equal(record.evidence.some(e => e.date === '2026-11-11' && e.text.includes('delivered')), true);
+    }
     assert.ok(record.evidence.every(e => e.date && e.kind && e.text));
     assert.equal(Object.hasOwn(record, 'accessToken'), false);
   }
