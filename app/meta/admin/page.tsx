@@ -16,12 +16,12 @@ export default async function AdminOverview() {
     <section className="pa-metrics" aria-label="Resumo do inventário">
       <div><span>Clientes registrados</span><strong>{summary.registered.toString().padStart(2, '0')}</strong></div>
       <div><span>Produção informada</span><strong>{summary.productionReported.toString().padStart(2, '0')}</strong></div>
-      <div><span>Homologação pendente</span><strong>{summary.pending.toString().padStart(2, '0')}</strong></div>
+      <div><span>Operações validadas</span><strong>{summary.validated.toString().padStart(2, '0')}</strong></div>
       <div><span>Saúde verificada ao vivo</span><strong>—</strong><small>Ainda sem consulta automática</small></div>
     </section>
-    <div className="pa-section-title"><h2>WhatsApp Business Platform</h2><span>3 organizações · registros de 23/10/2026</span></div>
-    <div className="pa-table-wrap"><table><caption className="pa-sr">Clientes e situação documentada de suas integrações WhatsApp</caption><thead><tr><th>Cliente / produto</th><th>Canal</th><th>Situação registrada</th><th>Verificação atual</th><th><span className="pa-sr">Detalhes</span></th></tr></thead><tbody>
-      {connections.map(c => <tr key={c.id}><td><div className="pa-client"><span className="pa-avatar">{c.initials}</span><div><strong>{c.name}</strong><small>{c.product}</small></div></div></td><td><span>{c.number || 'Número não conferido'}</span><small>WhatsApp Business</small></td><td><span className={`pa-badge ${c.stageKind === 'pending' ? 'pa-badge-pending' : ''}`}>{c.stage}</span></td><td><span className="pa-muted">Pendente de diagnóstico</span></td><td><Link className="pa-detail-link" href={`/meta/admin/connections/${c.id}`} aria-label={`Ver conexão de ${c.name}`}>Ver ficha <span aria-hidden="true">↗</span></Link></td></tr>)}
+    <div className="pa-section-title"><h2>WhatsApp Business Platform</h2><span>3 organizações · evidências atualizadas em 11/11/2026</span></div>
+    <div className="pa-table-wrap"><table><caption className="pa-sr">Clientes e situação documentada de suas integrações WhatsApp</caption><thead><tr><th>Cliente / produto</th><th>Canal</th><th>Situação registrada</th><th>Evidência / monitoramento</th><th><span className="pa-sr">Detalhes</span></th></tr></thead><tbody>
+      {connections.map(c => <tr key={c.id}><td><div className="pa-client"><span className="pa-avatar">{c.initials}</span><div><strong>{c.name}</strong><small>{c.product}</small></div></div></td><td><span>{c.number || 'Número não conferido'}</span><small>WhatsApp Business</small></td><td><span className={`pa-badge ${c.stageKind === 'pending' ? 'pa-badge-pending' : ''}`}>{c.stage}</span></td><td><span className="pa-muted">{c.verification || 'Sem diagnóstico ao vivo'}</span></td><td><Link className="pa-detail-link" href={`/meta/admin/connections/${c.id}`} aria-label={`Ver conexão de ${c.name}`}>Ver ficha <span aria-hidden="true">↗</span></Link></td></tr>)}
     </tbody></table></div>
     <section className="pa-quick-access" aria-labelledby="meta-ads-access">
       <div><p className="pa-eyebrow">META ADS</p><h2 id="meta-ads-access">Relatórios de tráfego</h2><p>Centralize aqui o acesso aos relatórios obtidos pela Marketing API, sem precisar memorizar rotas técnicas de review.</p></div>
@@ -46,7 +46,7 @@ export default async function AdminOverview() {
         </tr>)}</tbody>
       </table></div>}
     </section>
-    <section className="pa-note"><h2>Inventário não é confirmação de saúde</h2><p>Eduardo Brasil e LA Climatização já são atendidos pela Proxy, conforme informado pelo responsável. Este painel ainda não consulta a Meta nem os sistemas dos clientes. Nenhuma conexão é declarada operacional com base apenas nesse registro.</p></section>
+    <section className="pa-note"><h2>Homologação não é monitoramento contínuo</h2><p>O piloto Ichthus foi validado por mensagens reais em 11/11/2026, incluindo confirmação de entrega pela Meta. Isso não constitui diagnóstico de saúde em tempo real. Eduardo Brasil e LA Climatização permanecem com produção informada, sem validação operacional equivalente neste inventário.</p></section>
     <footer className="pa-footer"><span>Proxy gerencia as integrações. Cada CRM mantém seu próprio contexto.</span><span>Sem acesso a conversas ou credenciais</span></footer>
     </main></div></div>
 }
